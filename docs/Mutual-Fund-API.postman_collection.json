@@ -23,7 +23,7 @@
 	"variable": [
 		{
 			"key": "baseUrl",
-			"value": "http://localhost:8080",
+			"value": "http://localhost:8080/mutual-fund-management",
 			"type": "string"
 		},
 		{
@@ -35,11 +35,46 @@
 			"key": "fundId",
 			"value": "1",
 			"type": "string"
+		},
+		{
+			"key": "adminUsername",
+			"value": "admin",
+			"type": "string"
+		},
+		{
+			"key": "adminPassword",
+			"value": "admin123",
+			"type": "string"
+		},
+		{
+			"key": "userUsername",
+			"value": "testuser",
+			"type": "string"
+		},
+		{
+			"key": "userPassword",
+			"value": "password123",
+			"type": "string"
 		}
 	],
 	"item": [
 		{
 			"name": "User Management",
+			"auth": {
+				"type": "basic",
+				"basic": [
+					{
+						"key": "username",
+						"value": "{{userUsername}}",
+						"type": "string"
+					},
+					{
+						"key": "password",
+						"value": "{{userPassword}}",
+						"type": "string"
+					}
+				]
+			},
 			"item": [
 				{
 					"name": "Register User",
@@ -114,6 +149,21 @@
 		},
 		{
 			"name": "Transactions",
+			"auth": {
+				"type": "basic",
+				"basic": [
+					{
+						"key": "username",
+						"value": "{{userUsername}}",
+						"type": "string"
+					},
+					{
+						"key": "password",
+						"value": "{{userPassword}}",
+						"type": "string"
+					}
+				]
+			},
 			"item": [
 				{
 					"name": "Buy Units",
@@ -240,6 +290,21 @@
 		},
 		{
 			"name": "Admin Operations",
+			"auth": {
+				"type": "basic",
+				"basic": [
+					{
+						"key": "username",
+						"value": "{{adminUsername}}",
+						"type": "string"
+					},
+					{
+						"key": "password",
+						"value": "{{adminPassword}}",
+						"type": "string"
+					}
+				]
+			},
 			"item": [
 				{
 					"name": "Add Mutual Fund",
@@ -499,6 +564,271 @@
 							]
 						},
 						"description": "List all available actuator endpoints"
+					},
+					"response": []
+				},
+				{
+					"name": "Metrics",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/metrics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"metrics"
+							]
+						},
+						"description": "View application metrics"
+					},
+					"response": []
+				},
+				{
+					"name": "Specific Metric",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/metrics/jvm.memory.used",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"metrics",
+								"jvm.memory.used"
+							]
+						},
+						"description": "View specific metric details (example: jvm.memory.used)"
+					},
+					"response": []
+				},
+				{
+					"name": "Environment Properties",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/env",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"env"
+							]
+						},
+						"description": "View environment properties"
+					},
+					"response": []
+				},
+				{
+					"name": "Beans",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/beans",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"beans"
+							]
+						},
+						"description": "View all Spring beans in the application context"
+					},
+					"response": []
+				},
+				{
+					"name": "Configuration Properties",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/configprops",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"configprops"
+							]
+						},
+						"description": "View all @ConfigurationProperties beans"
+					},
+					"response": []
+				},
+				{
+					"name": "Loggers",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/loggers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"loggers"
+							]
+						},
+						"description": "View and modify logger configurations"
+					},
+					"response": []
+				},
+				{
+					"name": "Request Mappings",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/mappings",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"mappings"
+							]
+						},
+						"description": "View all @RequestMapping paths"
+					},
+					"response": []
+				},
+				{
+					"name": "Thread Dump",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/threaddump",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"threaddump"
+							]
+						},
+						"description": "Perform a thread dump"
+					},
+					"response": []
+				},
+				{
+					"name": "Heap Dump",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/heapdump",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"heapdump"
+							]
+						},
+						"description": "Download a heap dump (returns binary file)"
+					},
+					"response": []
+				},
+				{
+					"name": "Conditions",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/conditions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"conditions"
+							]
+						},
+						"description": "View condition evaluation report"
+					},
+					"response": []
+				},
+				{
+					"name": "Scheduled Tasks",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/scheduledtasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"scheduledtasks"
+							]
+						},
+						"description": "View scheduled tasks"
+					},
+					"response": []
+				},
+				{
+					"name": "Caches",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/caches",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"caches"
+							]
+						},
+						"description": "View available caches"
 					},
 					"response": []
 				}

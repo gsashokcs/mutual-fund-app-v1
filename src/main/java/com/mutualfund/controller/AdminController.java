@@ -21,6 +21,7 @@ import com.mutualfund.service.MutualFundService;
 import com.mutualfund.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -29,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Validated
 @PreAuthorize("hasRole('ADMIN')")
-// @SecurityRequirement(name = "basicAuth")
+@SecurityRequirement(name = "basicAuth")
 @Tag(
         name = "Admin Operations",
         description = "Administrative endpoints for managing funds and users")

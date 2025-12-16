@@ -722,6 +722,130 @@ mutual-fund-app-v1/
 - Use meaningful commit messages
 - Document public APIs with JavaDoc
 
+## Security Implementation
+
+### Overview
+The application implements Basic Authentication with role-based access control for secure user and admin operations.
+
+### Security Configuration
+
+#### SecurityConfig.java
+- **Basic Authentication**: HTTP Basic Auth for all protected endpoints
+- **Stateless Sessions**: `SessionCreationPolicy.STATELESS` for REST API
+- **Role-Based Access Control**:
+  - **Public Endpoints** (no authentication required):
+    - `/api/v1/users/register` - User registration
+    - `/actuator/**` - Health and monitoring endpoints
+    - `/h2-console/**` - H2 database console
+    - `/swagger-ui/**`, `/v3/api-docs/**` - API documentation
+  
+  - **ADMIN Only** (requires ROLE_ADMIN):
+    - `/api/v1/admin/**` - All admin operations
+      - Manage mutual funds (add, update NAV, delete)
+      - Manage users (view all, delete)
+  
+  - **Authenticated Users** (requires login):
+    - `/api/v1/users/**` - User profile and transactions
+      - Additional ownership validation in service layer
+
+#### SecurityService.java
+Service for handling authorization checks:
+
+- **validateUserAccess(userId)**: Validates that users can only access their own data
+  - Admin users bypass this check (can access all data)
+  - Regular users must match the requested userId with their own
+  - Throws `BusinessException(UNAUTHORIZED_ACCESS)` if access denied
+
+- **getAuthenticatedUser()**: Returns the currently logged-in User entity
+- **getAuthenticatedUsername()**: Returns the username of logged-in user
+- **isAdmin()**: Checks if current user has ADMIN role
+
+#### DataInitializer.java
+Creates admin user at startup:
+- **Username**: admin
+- **Password**: admin123 (BCrypt encoded)
+- **Role**: ADMIN
+- Idempotent - only creates if admin doesn't exist
+
+#### CustomUserDetailsService.java
+- Loads user from database for authentication
+- Converts User entity to Spring Security UserDetails
+- Adds `ROLE_` prefix to user roles (e.g., USER → ROLE_USER)
+
+### Service Layer Security
+
+#### UserService
+- **getUserById()**: Added ownership validation
+  - Users can only view their own profile
+  - Admins can view any profile
+
+#### TransactionService
+Ownership validation on all transaction methods:
+- **buyUnits()**: Users can only buy for their own account
+- **redeemUnits()**: Users can only redeem from their own account
+- **getUserHoldings()**: Users can only view their own holdings
+- **getUserTransactions()**: Users can only view their own transactions
+
+Admins can access any user's transaction data through the security bypass.
+
+### Testing Credentials
+
+#### Admin User
+- **Username**: admin
+- **Password**: admin123
+- **Access**: All endpoints including `/api/v1/admin/**`
+
+#### Regular User (Test)
+- **Username**: testuser
+- **Password**: password123
+- **Access**: Own profile and transactions only
+
+### Security Flow
+
+1. **Authentication**:
+   - User provides credentials via HTTP Basic Auth header
+   - `CustomUserDetailsService` loads user from database
+   - Spring Security validates password using BCrypt
+   - Authentication token created with user's role
+
+2. **Authorization - URL Level**:
+   - Spring Security checks URL patterns in `SecurityFilterChain`
+   - Admin endpoints require `ROLE_ADMIN`
+   - Other endpoints require authentication
+
+3. **Authorization - Data Level**:
+   - Services call `SecurityService.validateUserAccess(userId)`
+   - Validates user owns the requested data
+   - Admin role bypasses ownership check
+
+### API Endpoints Access Summary
+
+| Endpoint Pattern | Access Level | Notes |
+|-----------------|-------------|-------|
+| `POST /api/v1/users/register` | Public | User registration |
+| `GET /api/v1/users/{userId}` | Authenticated + Ownership | View own profile |
+| `POST /api/v1/users/{userId}/buy` | Authenticated + Ownership | Buy units for own account |
+| `POST /api/v1/users/{userId}/redeem` | Authenticated + Ownership | Redeem own units |
+| `GET /api/v1/users/{userId}/holdings` | Authenticated + Ownership | View own holdings |
+| `GET /api/v1/users/{userId}/transactions` | Authenticated + Ownership | View own transactions |
+| `POST /api/v1/admin/funds` | ADMIN only | Add mutual fund |
+| `PUT /api/v1/admin/funds/{id}/nav` | ADMIN only | Update NAV |
+| `GET /api/v1/admin/funds` | ADMIN only | List all funds |
+| `DELETE /api/v1/admin/funds/{id}` | ADMIN only | Delete fund |
+| `GET /api/v1/admin/users` | ADMIN only | List all users |
+| `DELETE /api/v1/admin/users/{id}` | ADMIN only | Delete user |
+| `/actuator/**` | Public | Health monitoring |
+| `/h2-console/**` | Public | Database console |
+
+### Security Benefits
+
+1. **Strong Authentication**: BCrypt password encoding
+2. **Role-Based Access**: Clear separation between admin and user operations
+3. **Ownership Validation**: Users cannot access other users' data
+4. **Admin Privileges**: Admins have full access for management
+5. **Stateless**: REST-compliant stateless sessions
+6. **Flexible**: Easy to extend with additional roles or permissions
+
 ## Troubleshooting
 
 ### Common Issues
@@ -743,8 +867,8 @@ mvn clean install -DskipTests
 ```
 
 **Authentication issues:**
-- Verify credentials: admin/admin123
-- Check if security is disabled (test profile)
+- Verify credentials: admin/admin123 or testuser/password123
+- Ensure authentication header is properly formatted (Basic Auth)
 
 ## License
 

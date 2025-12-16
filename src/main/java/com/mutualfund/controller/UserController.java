@@ -13,6 +13,7 @@ import com.mutualfund.model.response.UserResponse;
 import com.mutualfund.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -48,7 +49,7 @@ public class UserController {
      * @return ResponseEntity with UserResponse and HTTP 200 status
      */
     @GetMapping("/{userId}")
-    // @SecurityRequirement(name = "basicAuth")
+    @SecurityRequirement(name = "basicAuth")
     @Operation(
             summary = "Get user profile",
             description = "Retrieves user profile information by user ID")

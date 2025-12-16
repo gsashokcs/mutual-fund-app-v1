@@ -67,6 +67,10 @@
     "userMessage": "Unauthorized access.",
     "devMessage": "Authentication is required to access this resource."
   },
+  "UNAUTHORIZED_ACCESS": {
+    "userMessage": "You are not authorized to access this resource.",
+    "devMessage": "User attempted to access another user's data without proper permissions."
+  },
   "NAV_UPDATE_FAILED": {
     "userMessage": "Failed to update NAV.",
     "devMessage": "Error occurred while updating Net Asset Value for the mutual fund."

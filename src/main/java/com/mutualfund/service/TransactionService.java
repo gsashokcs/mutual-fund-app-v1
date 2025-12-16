@@ -32,14 +32,17 @@ public class TransactionService implements ITransactionService {
     private final HoldingRepository holdingRepository;
     private final MutualFundService mutualFundService;
     private final com.mutualfund.service.strategy.TransactionStrategyFactory strategyFactory;
+    private final SecurityService securityService;
 
     /**
-     * Processes a buy transaction for mutual fund units.
+     * Processes a buy transaction for mutual fund units. Users can only buy units for their own
+     * account.
      *
      * @param userId the ID of the user making the purchase
      * @param request the transaction request containing fund ID and units
      * @return TransactionResponse containing transaction details
      * @throws ResourceNotFoundException if mutual fund is not found
+     * @throws BusinessException if user attempts to buy for another user's account
      */
     @Transactional
     public TransactionResponse buyUnits(Long userId, TransactionRequest request) {
@@ -47,6 +50,9 @@ public class TransactionService implements ITransactionService {
                 "Processing buy transaction for user ID: {}, fund ID: {}",
                 userId,
                 request.getFundId());
+
+        // Validate user access - users can only buy for their own account
+        securityService.validateUserAccess(userId);
 
         MutualFund fund = mutualFundService.getCurrentMutualFund(request.getFundId());
 
@@ -68,13 +74,15 @@ public class TransactionService implements ITransactionService {
     }
 
     /**
-     * Processes a redemption transaction for mutual fund units.
+     * Processes a redemption transaction for mutual fund units. Users can only redeem units from
+     * their own account.
      *
      * @param userId the ID of the user redeeming units
      * @param request the transaction request containing fund ID and units
      * @return TransactionResponse containing transaction details
      * @throws BusinessException if holdings not found or insufficient units
      * @throws ResourceNotFoundException if mutual fund is not found
+     * @throws BusinessException if user attempts to redeem from another user's account
      */
     @Transactional
     public TransactionResponse redeemUnits(Long userId, TransactionRequest request) {
@@ -82,6 +90,9 @@ public class TransactionService implements ITransactionService {
                 "Processing redeem transaction for user ID: {}, fund ID: {}",
                 userId,
                 request.getFundId());
+
+        // Validate user access - users can only redeem from their own account
+        securityService.validateUserAccess(userId);
 
         MutualFund fund = mutualFundService.getCurrentMutualFund(request.getFundId());
 
@@ -121,14 +132,19 @@ public class TransactionService implements ITransactionService {
     }
 
     /**
-     * Retrieves all mutual fund holdings for a user with current values.
+     * Retrieves all mutual fund holdings for a user with current values. Users can only view their
+     * own holdings.
      *
      * @param userId the ID of the user
      * @return List of HoldingResponse with current NAV and values
+     * @throws BusinessException if user attempts to view another user's holdings
      */
     @Transactional(readOnly = true)
     public List<HoldingResponse> getUserHoldings(Long userId) {
         log.info("Fetching holdings for user ID: {}", userId);
+
+        // Validate user access - users can only view their own holdings
+        securityService.validateUserAccess(userId);
 
         List<Holding> holdings = holdingRepository.findByUserId(userId);
 
@@ -139,14 +155,18 @@ public class TransactionService implements ITransactionService {
     }
 
     /**
-     * Retrieves all transactions for a user.
+     * Retrieves all transactions for a user. Users can only view their own transactions.
      *
      * @param userId the ID of the user
      * @return List of TransactionResponse containing transaction history
+     * @throws BusinessException if user attempts to view another user's transactions
      */
     @Transactional(readOnly = true)
     public List<TransactionResponse> getUserTransactions(Long userId) {
         log.info("Fetching transactions for user ID: {}", userId);
+
+        // Validate user access - users can only view their own transactions
+        securityService.validateUserAccess(userId);
 
         List<Transaction> transactions = transactionRepository.findByUserId(userId);
 
@@ -154,14 +174,18 @@ public class TransactionService implements ITransactionService {
     }
 
     /**
-     * Retrieves all transactions for a user with pagination support.
+     * Retrieves all transactions for a user with pagination support. Users can only view their own
+     * transactions.
      *
      * @param userId the ID of the user
      * @param pageable the pagination information
      * @return Page of TransactionResponse containing transaction history
+     * @throws BusinessException if user attempts to view another user's transactions
      */
     @Transactional(readOnly = true)
     public Page<TransactionResponse> getUserTransactions(Long userId, Pageable pageable) {
+        // Validate user access - users can only view their own transactions
+        securityService.validateUserAccess(userId);
         log.info(
                 "Fetching transactions for user ID: {} with pagination: page {}, size {}",
                 userId,

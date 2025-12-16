@@ -26,6 +26,7 @@ public class UserService implements IUserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SecurityService securityService;
 
     /**
      * Registers a new user in the system.
@@ -83,15 +84,21 @@ public class UserService implements IUserService {
     }
 
     /**
-     * Retrieves a user by their ID.
+     * Retrieves a user by their ID. Regular users can only access their own profile. Admin users
+     * can access any profile.
      *
      * @param userId the ID of the user to retrieve
      * @return UserResponse containing the user's details
      * @throws ResourceNotFoundException if user is not found
+     * @throws BusinessException if user attempts to access another user's profile
      */
     @Transactional(readOnly = true)
     public UserResponse getUserById(Long userId) {
         log.info("Fetching user by ID: {}", userId);
+
+        // Validate user access - users can only view their own profile unless they are admin
+        securityService.validateUserAccess(userId);
+
         User user =
                 userRepository
                         .findById(

@@ -20,6 +20,7 @@ import com.mutualfund.model.response.TransactionResponse;
 import com.mutualfund.service.TransactionService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -27,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/users/{userId}")
 @RequiredArgsConstructor
 @Validated
-// @SecurityRequirement(name = "basicAuth")
+@SecurityRequirement(name = "basicAuth")
 @Tag(name = "Transactions", description = "User transaction and holdings management endpoints")
 public class TransactionController {
 
