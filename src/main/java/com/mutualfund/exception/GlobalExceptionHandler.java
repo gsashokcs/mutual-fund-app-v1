@@ -30,13 +30,6 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Global exception handler for the application. Handles all exceptions thrown by controllers and
- * provides consistent error responses to clients.
- *
- * <p>This controller advice intercepts exceptions and converts them to appropriate HTTP responses
- * with standardized error format.
- */
 @RestControllerAdvice
 @RequiredArgsConstructor
 @Slf4j
@@ -44,13 +37,6 @@ public class GlobalExceptionHandler {
 
     private final ErrorMessageService errorMessageService;
 
-    /**
-     * Handles ResourceNotFoundException thrown when a requested resource is not found.
-     *
-     * @param ex the exception
-     * @param request the web request
-     * @return error response with 404 status
-     */
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
@@ -75,13 +61,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
-    /**
-     * Handles BusinessException thrown for business logic violations.
-     *
-     * @param ex the exception
-     * @param request the web request
-     * @return error response with 400 status
-     */
     @ExceptionHandler(BusinessException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorResponse> handleBusinessException(
@@ -106,13 +85,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
-    /**
-     * Handles MethodArgumentNotValidException thrown when request body validation fails.
-     *
-     * @param ex the exception
-     * @param request the web request
-     * @return error response with 400 status and validation details
-     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorResponse> handleValidationException(
@@ -144,14 +116,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
-    /**
-     * Handles ConstraintViolationException thrown for path variable and request parameter
-     * validation.
-     *
-     * @param ex the exception
-     * @param request the web request
-     * @return error response with 400 status
-     */
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorResponse> handleConstraintViolationException(
@@ -176,13 +140,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
-    /**
-     * Handles AccessDeniedException thrown when user doesn't have required permissions.
-     *
-     * @param ex the exception
-     * @param request the web request
-     * @return error response with 403 status
-     */
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(
@@ -202,13 +159,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
-    /**
-     * Handles BadCredentialsException thrown when authentication fails.
-     *
-     * @param ex the exception
-     * @param request the web request
-     * @return error response with 401 status
-     */
     @ExceptionHandler(BadCredentialsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ResponseEntity<ErrorResponse> handleBadCredentialsException(
@@ -228,13 +178,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
-    /**
-     * Handles MethodArgumentTypeMismatchException thrown when path variable type conversion fails.
-     *
-     * @param ex the exception
-     * @param request the web request
-     * @return error response with 400 status
-     */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatch(
@@ -254,13 +197,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
-    /**
-     * Handles HttpRequestMethodNotSupportedException when HTTP method is not supported.
-     *
-     * @param ex the exception
-     * @param request the web request
-     * @return error response with 405 status
-     */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     public ResponseEntity<ErrorResponse> handleMethodNotSupported(
@@ -280,13 +216,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(error);
     }
 
-    /**
-     * Handles HttpMediaTypeNotSupportedException when content type is not supported.
-     *
-     * @param ex the exception
-     * @param request the web request
-     * @return error response with 415 status
-     */
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     @ResponseStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
     public ResponseEntity<ErrorResponse> handleMediaTypeNotSupported(
@@ -305,13 +234,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(error);
     }
 
-    /**
-     * Handles HttpMessageNotReadableException when request body cannot be read or parsed.
-     *
-     * @param ex the exception
-     * @param request the web request
-     * @return error response with 400 status
-     */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorResponse> handleMessageNotReadable(
@@ -328,13 +250,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
-    /**
-     * Handles MissingServletRequestParameterException when required parameter is missing.
-     *
-     * @param ex the exception
-     * @param request the web request
-     * @return error response with 400 status
-     */
     @ExceptionHandler(MissingServletRequestParameterException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorResponse> handleMissingParameter(
@@ -356,13 +271,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
-    /**
-     * Handles NoHandlerFoundException when no handler is found for the request.
-     *
-     * @param ex the exception
-     * @param request the web request
-     * @return error response with 404 status
-     */
     @ExceptionHandler(NoHandlerFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<ErrorResponse> handleNoHandlerFound(
@@ -379,13 +287,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
-    /**
-     * Handles DataIntegrityViolationException for database constraint violations.
-     *
-     * @param ex the exception
-     * @param request the web request
-     * @return error response with 409 status
-     */
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(
@@ -402,13 +303,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
-    /**
-     * Handles IllegalArgumentException for invalid arguments.
-     *
-     * @param ex the exception
-     * @param request the web request
-     * @return error response with 400 status
-     */
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(
@@ -422,13 +316,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
-    /**
-     * Handles all uncaught exceptions.
-     *
-     * @param ex the exception
-     * @param request the web request
-     * @return error response with 500 status
-     */
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, WebRequest request) {
@@ -447,15 +334,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 
-    /**
-     * Builds an ErrorResponse object with consistent structure.
-     *
-     * @param userMessage user-friendly error message
-     * @param devMessage detailed developer message
-     * @param errorCode unique error code
-     * @param request the web request
-     * @return ErrorResponse object
-     */
     private ErrorResponse buildErrorResponse(
             String userMessage, String devMessage, String errorCode, WebRequest request) {
         return ErrorResponse.builder()
@@ -467,12 +345,6 @@ public class GlobalExceptionHandler {
                 .build();
     }
 
-    /**
-     * Extracts the request path from WebRequest.
-     *
-     * @param request the web request
-     * @return the request path
-     */
     private String extractPath(WebRequest request) {
         if (request instanceof ServletWebRequest) {
             return ((ServletWebRequest) request).getRequest().getRequestURI();

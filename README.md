@@ -360,11 +360,46 @@ Or pass as a runtime argument:
 java -jar target/mutual-fund-management-1.0.0.jar --spring.profiles.active=prod
 ```
 
+### 4. Database Password Configuration
+
+The application uses an environment variable for database password. Set it before running:
+
+**Windows (PowerShell):**
+```powershell
+$env:DB_PASSWORD="your_password"
+```
+
+**Windows (Command Prompt):**
+```cmd
+set DB_PASSWORD=your_password
+```
+
+**Linux/Mac:**
+```bash
+export DB_PASSWORD=your_password
+```
+
 ## Running the Application
 
 ### Using Maven
 
+**Windows (PowerShell):**
+```powershell
+# Set database password (optional for H2)
+$env:DB_PASSWORD=""
+
+# Clean and build the project
+mvn clean package
+
+# Run the application
+mvn spring-boot:run
+```
+
+**Linux/Mac:**
 ```bash
+# Set database password (optional for H2)
+export DB_PASSWORD=""
+
 # Clean and build the project
 mvn clean package
 
@@ -374,7 +409,23 @@ mvn spring-boot:run
 
 ### Using Java
 
+**Windows (PowerShell):**
+```powershell
+# Set database password (optional for H2)
+$env:DB_PASSWORD=""
+
+# Build the JAR
+mvn clean package
+
+# Run the JAR
+java -jar target/mutual-fund-management-1.0.0.jar
+```
+
+**Linux/Mac:**
 ```bash
+# Set database password (optional for H2)
+export DB_PASSWORD=""
+
 # Build the JAR
 mvn clean package
 
@@ -384,7 +435,15 @@ java -jar target/mutual-fund-management-1.0.0.jar
 
 ### Run with specific profile
 
+**Windows (PowerShell):**
+```powershell
+$env:DB_PASSWORD=""
+mvn spring-boot:run -Dspring-boot.run.profiles=prod
+```
+
+**Linux/Mac:**
 ```bash
+export DB_PASSWORD=""
 mvn spring-boot:run -Dspring-boot.run.profiles=prod
 ```
 
