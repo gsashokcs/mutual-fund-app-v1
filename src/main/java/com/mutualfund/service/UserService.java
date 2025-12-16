@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.mutualfund.exception.BusinessException;
+import com.mutualfund.exception.ErrorCode;
 import com.mutualfund.exception.ResourceNotFoundException;
 import com.mutualfund.model.entity.User;
 import com.mutualfund.model.request.UserRegistrationRequest;
@@ -37,7 +38,8 @@ public class UserService {
         log.info("Registering new user: {}", request.getUsername());
 
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new BusinessException("Username already exists: " + request.getUsername());
+            throw new BusinessException(
+                    ErrorCode.DUPLICATE_USER, "Username already exists: " + request.getUsername());
         }
 
         User user =

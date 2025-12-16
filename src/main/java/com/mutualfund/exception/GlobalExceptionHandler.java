@@ -1,169 +1,482 @@
 package com.mutualfund.exception;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * Global exception handler for the application. Handles all exceptions thrown by controllers and
+ * provides consistent error responses to clients.
+ *
+ * <p>This controller advice intercepts exceptions and converts them to appropriate HTTP responses
+ * with standardized error format.
+ */
 @RestControllerAdvice
+@RequiredArgsConstructor
+@Slf4j
 public class GlobalExceptionHandler {
 
-    @Autowired private ErrorMessageService errorMessageService;
+    private final ErrorMessageService errorMessageService;
 
+    /**
+     * Handles ResourceNotFoundException thrown when a requested resource is not found.
+     *
+     * @param ex the exception
+     * @param request the web request
+     * @return error response with 404 status
+     */
     @ExceptionHandler(ResourceNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
             ResourceNotFoundException ex, WebRequest request) {
+        log.warn("Resource not found: {} - ErrorCode: {}", ex.getMessage(), ex.getErrorCode());
 
-        String errorCode = determineErrorCode(ex.getMessage());
         ErrorMessageService.ErrorMessageDetail errorDetail =
-                errorMessageService.getErrorMessage(errorCode);
+                errorMessageService.getErrorMessage(ex.getErrorCode().getCode());
+
+        String devMessage = errorDetail.getDevMessage();
+        if (ex.getMessage() != null && !ex.getMessage().equals(ex.getErrorCode().getCode())) {
+            devMessage += " - " + ex.getMessage();
+        }
 
         ErrorResponse error =
-                ErrorResponse.builder()
-                        .userMessage(errorDetail.getUserMessage())
-                        .devMessage(errorDetail.getDevMessage() + " - " + ex.getMessage())
-                        .errorCode(errorCode)
-                        .timestamp(LocalDateTime.now())
-                        .path(request.getDescription(false).replace("uri=", ""))
-                        .build();
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+                buildErrorResponse(
+                        errorDetail.getUserMessage(),
+                        devMessage,
+                        ex.getErrorCode().getCode(),
+                        request);
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
+    /**
+     * Handles BusinessException thrown for business logic violations.
+     *
+     * @param ex the exception
+     * @param request the web request
+     * @return error response with 400 status
+     */
     @ExceptionHandler(BusinessException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorResponse> handleBusinessException(
             BusinessException ex, WebRequest request) {
+        log.warn("Business exception: {} - ErrorCode: {}", ex.getMessage(), ex.getErrorCode());
 
-        String errorCode = determineErrorCode(ex.getMessage());
         ErrorMessageService.ErrorMessageDetail errorDetail =
-                errorMessageService.getErrorMessage(errorCode);
+                errorMessageService.getErrorMessage(ex.getErrorCode().getCode());
+
+        String devMessage = errorDetail.getDevMessage();
+        if (ex.getMessage() != null && !ex.getMessage().equals(ex.getErrorCode().getCode())) {
+            devMessage += " - " + ex.getMessage();
+        }
 
         ErrorResponse error =
-                ErrorResponse.builder()
-                        .userMessage(errorDetail.getUserMessage())
-                        .devMessage(errorDetail.getDevMessage() + " - " + ex.getMessage())
-                        .errorCode(errorCode)
-                        .timestamp(LocalDateTime.now())
-                        .path(request.getDescription(false).replace("uri=", ""))
-                        .build();
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+                buildErrorResponse(
+                        errorDetail.getUserMessage(),
+                        devMessage,
+                        ex.getErrorCode().getCode(),
+                        request);
+
+        return ResponseEntity.badRequest().body(error);
     }
 
+    /**
+     * Handles MethodArgumentNotValidException thrown when request body validation fails.
+     *
+     * @param ex the exception
+     * @param request the web request
+     * @return error response with 400 status and validation details
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex, WebRequest request) {
+        log.warn("Validation error: {} errors found", ex.getBindingResult().getErrorCount());
 
-        String message =
-                ex.getBindingResult().getFieldErrors().stream()
-                        .map(FieldError::getDefaultMessage)
-                        .collect(Collectors.joining(", "));
+        Map<String, String> validationErrors = new HashMap<>();
+        ex.getBindingResult()
+                .getAllErrors()
+                .forEach(
+                        error -> {
+                            String fieldName = ((FieldError) error).getField();
+                            String errorMessage = error.getDefaultMessage();
+                            validationErrors.put(fieldName, errorMessage);
+                        });
+
+        String message = validationErrors.values().stream().collect(Collectors.joining(", "));
 
         ErrorMessageService.ErrorMessageDetail errorDetail =
-                errorMessageService.getErrorMessage("VALIDATION_ERROR");
+                errorMessageService.getErrorMessage(ErrorCode.VALIDATION_ERROR.getCode());
 
         ErrorResponse error =
-                ErrorResponse.builder()
-                        .userMessage(errorDetail.getUserMessage())
-                        .devMessage(errorDetail.getDevMessage() + " - " + message)
-                        .errorCode("VALIDATION_ERROR")
-                        .timestamp(LocalDateTime.now())
-                        .path(request.getDescription(false).replace("uri=", ""))
-                        .build();
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+                buildErrorResponse(
+                        errorDetail.getUserMessage(),
+                        errorDetail.getDevMessage() + " - " + message,
+                        ErrorCode.VALIDATION_ERROR.getCode(),
+                        request);
+
+        return ResponseEntity.badRequest().body(error);
     }
 
-    @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+    /**
+     * Handles ConstraintViolationException thrown for path variable and request parameter
+     * validation.
+     *
+     * @param ex the exception
+     * @param request the web request
+     * @return error response with 400 status
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorResponse> handleConstraintViolationException(
-            jakarta.validation.ConstraintViolationException ex, WebRequest request) {
+            ConstraintViolationException ex, WebRequest request) {
+        log.warn("Constraint violation: {} violations found", ex.getConstraintViolations().size());
 
         String message =
                 ex.getConstraintViolations().stream()
-                        .map(violation -> violation.getMessage())
+                        .map(ConstraintViolation::getMessage)
                         .collect(Collectors.joining(", "));
 
         ErrorMessageService.ErrorMessageDetail errorDetail =
-                errorMessageService.getErrorMessage("VALIDATION_ERROR");
+                errorMessageService.getErrorMessage(ErrorCode.VALIDATION_ERROR.getCode());
 
         ErrorResponse error =
-                ErrorResponse.builder()
-                        .userMessage(errorDetail.getUserMessage())
-                        .devMessage(errorDetail.getDevMessage() + " - " + message)
-                        .errorCode("VALIDATION_ERROR")
-                        .timestamp(LocalDateTime.now())
-                        .path(request.getDescription(false).replace("uri=", ""))
-                        .build();
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+                buildErrorResponse(
+                        errorDetail.getUserMessage(),
+                        errorDetail.getDevMessage() + " - " + message,
+                        ErrorCode.VALIDATION_ERROR.getCode(),
+                        request);
+
+        return ResponseEntity.badRequest().body(error);
     }
 
+    /**
+     * Handles AccessDeniedException thrown when user doesn't have required permissions.
+     *
+     * @param ex the exception
+     * @param request the web request
+     * @return error response with 403 status
+     */
     @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(
             AccessDeniedException ex, WebRequest request) {
+        log.warn("Access denied: {}", ex.getMessage());
 
         ErrorMessageService.ErrorMessageDetail errorDetail =
-                errorMessageService.getErrorMessage("ACCESS_DENIED");
+                errorMessageService.getErrorMessage(ErrorCode.ACCESS_DENIED.getCode());
 
         ErrorResponse error =
-                ErrorResponse.builder()
-                        .userMessage(errorDetail.getUserMessage())
-                        .devMessage(errorDetail.getDevMessage())
-                        .errorCode("ACCESS_DENIED")
-                        .timestamp(LocalDateTime.now())
-                        .path(request.getDescription(false).replace("uri=", ""))
-                        .build();
-        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+                buildErrorResponse(
+                        errorDetail.getUserMessage(),
+                        errorDetail.getDevMessage(),
+                        ErrorCode.ACCESS_DENIED.getCode(),
+                        request);
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
+    /**
+     * Handles BadCredentialsException thrown when authentication fails.
+     *
+     * @param ex the exception
+     * @param request the web request
+     * @return error response with 401 status
+     */
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseEntity<ErrorResponse> handleBadCredentialsException(
+            BadCredentialsException ex, WebRequest request) {
+        log.warn("Authentication failed: Invalid credentials");
+
+        ErrorMessageService.ErrorMessageDetail errorDetail =
+                errorMessageService.getErrorMessage(ErrorCode.AUTHENTICATION_FAILED.getCode());
+
+        ErrorResponse error =
+                buildErrorResponse(
+                        errorDetail.getUserMessage(),
+                        errorDetail.getDevMessage() + ": " + ex.getMessage(),
+                        ErrorCode.AUTHENTICATION_FAILED.getCode(),
+                        request);
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
+    /**
+     * Handles MethodArgumentTypeMismatchException thrown when path variable type conversion fails.
+     *
+     * @param ex the exception
+     * @param request the web request
+     * @return error response with 400 status
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatch(
+            MethodArgumentTypeMismatchException ex, WebRequest request) {
+        log.warn(
+                "Type mismatch: {} cannot be converted to {}", ex.getValue(), ex.getRequiredType());
+
+        String message =
+                String.format(
+                        "Invalid value '%s' for parameter '%s'. Expected type: %s",
+                        ex.getValue(), ex.getName(), ex.getRequiredType().getSimpleName());
+
+        ErrorResponse error =
+                buildErrorResponse(
+                        "Invalid request parameter type", message, "TYPE_MISMATCH", request);
+
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    /**
+     * Handles HttpRequestMethodNotSupportedException when HTTP method is not supported.
+     *
+     * @param ex the exception
+     * @param request the web request
+     * @return error response with 405 status
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    public ResponseEntity<ErrorResponse> handleMethodNotSupported(
+            HttpRequestMethodNotSupportedException ex, WebRequest request) {
+        log.warn("Method not supported: {} for path {}", ex.getMethod(), extractPath(request));
+
+        String message =
+                String.format(
+                        "HTTP method '%s' is not supported for this endpoint. "
+                                + "Supported methods: %s",
+                        ex.getMethod(), ex.getSupportedHttpMethods());
+
+        ErrorResponse error =
+                buildErrorResponse(
+                        "HTTP method not supported", message, "METHOD_NOT_ALLOWED", request);
+
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(error);
+    }
+
+    /**
+     * Handles HttpMediaTypeNotSupportedException when content type is not supported.
+     *
+     * @param ex the exception
+     * @param request the web request
+     * @return error response with 415 status
+     */
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    @ResponseStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+    public ResponseEntity<ErrorResponse> handleMediaTypeNotSupported(
+            HttpMediaTypeNotSupportedException ex, WebRequest request) {
+        log.warn("Media type not supported: {}", ex.getContentType());
+
+        String message =
+                String.format(
+                        "Content type '%s' is not supported. " + "Supported types: %s",
+                        ex.getContentType(), ex.getSupportedMediaTypes());
+
+        ErrorResponse error =
+                buildErrorResponse(
+                        "Unsupported media type", message, "UNSUPPORTED_MEDIA_TYPE", request);
+
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(error);
+    }
+
+    /**
+     * Handles HttpMessageNotReadableException when request body cannot be read or parsed.
+     *
+     * @param ex the exception
+     * @param request the web request
+     * @return error response with 400 status
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorResponse> handleMessageNotReadable(
+            HttpMessageNotReadableException ex, WebRequest request) {
+        log.warn("Message not readable: {}", ex.getMessage());
+
+        ErrorResponse error =
+                buildErrorResponse(
+                        "Malformed JSON request",
+                        "Failed to read request body: " + ex.getMostSpecificCause().getMessage(),
+                        "MALFORMED_JSON",
+                        request);
+
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    /**
+     * Handles MissingServletRequestParameterException when required parameter is missing.
+     *
+     * @param ex the exception
+     * @param request the web request
+     * @return error response with 400 status
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorResponse> handleMissingParameter(
+            MissingServletRequestParameterException ex, WebRequest request) {
+        log.warn(
+                "Missing required parameter: {} of type {}",
+                ex.getParameterName(),
+                ex.getParameterType());
+
+        String message =
+                String.format(
+                        "Required parameter '%s' of type '%s' is missing",
+                        ex.getParameterName(), ex.getParameterType());
+
+        ErrorResponse error =
+                buildErrorResponse(
+                        "Missing required parameter", message, "MISSING_PARAMETER", request);
+
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    /**
+     * Handles NoHandlerFoundException when no handler is found for the request.
+     *
+     * @param ex the exception
+     * @param request the web request
+     * @return error response with 404 status
+     */
+    @ExceptionHandler(NoHandlerFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<ErrorResponse> handleNoHandlerFound(
+            NoHandlerFoundException ex, WebRequest request) {
+        log.warn("No handler found: {} {}", ex.getHttpMethod(), ex.getRequestURL());
+
+        String message =
+                String.format(
+                        "No endpoint found for %s %s", ex.getHttpMethod(), ex.getRequestURL());
+
+        ErrorResponse error =
+                buildErrorResponse("Endpoint not found", message, "ENDPOINT_NOT_FOUND", request);
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    /**
+     * Handles DataIntegrityViolationException for database constraint violations.
+     *
+     * @param ex the exception
+     * @param request the web request
+     * @return error response with 409 status
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex, WebRequest request) {
+        log.error("Data integrity violation: {}", ex.getMessage());
+
+        ErrorResponse error =
+                buildErrorResponse(
+                        "Data integrity constraint violation",
+                        "Database constraint violated: " + ex.getMostSpecificCause().getMessage(),
+                        "DATA_INTEGRITY_VIOLATION",
+                        request);
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    /**
+     * Handles IllegalArgumentException for invalid arguments.
+     *
+     * @param ex the exception
+     * @param request the web request
+     * @return error response with 400 status
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(
+            IllegalArgumentException ex, WebRequest request) {
+        log.warn("Illegal argument: {}", ex.getMessage());
+
+        ErrorResponse error =
+                buildErrorResponse(
+                        "Invalid argument provided", ex.getMessage(), "ILLEGAL_ARGUMENT", request);
+
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    /**
+     * Handles all uncaught exceptions.
+     *
+     * @param ex the exception
+     * @param request the web request
+     * @return error response with 500 status
+     */
     @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, WebRequest request) {
+        log.error("Unhandled exception occurred: {}", ex.getMessage(), ex);
 
         ErrorMessageService.ErrorMessageDetail errorDetail =
-                errorMessageService.getErrorMessage("INTERNAL_SERVER_ERROR");
+                errorMessageService.getErrorMessage(ErrorCode.INTERNAL_SERVER_ERROR.getCode());
 
         ErrorResponse error =
-                ErrorResponse.builder()
-                        .userMessage(errorDetail.getUserMessage())
-                        .devMessage(errorDetail.getDevMessage() + " - " + ex.getMessage())
-                        .errorCode("INTERNAL_SERVER_ERROR")
-                        .timestamp(LocalDateTime.now())
-                        .path(request.getDescription(false).replace("uri=", ""))
-                        .build();
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+                buildErrorResponse(
+                        errorDetail.getUserMessage(),
+                        errorDetail.getDevMessage() + " - " + ex.getMessage(),
+                        ErrorCode.INTERNAL_SERVER_ERROR.getCode(),
+                        request);
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 
-    private String determineErrorCode(String message) {
-        if (message == null) return "RESOURCE_NOT_FOUND";
+    /**
+     * Builds an ErrorResponse object with consistent structure.
+     *
+     * @param userMessage user-friendly error message
+     * @param devMessage detailed developer message
+     * @param errorCode unique error code
+     * @param request the web request
+     * @return ErrorResponse object
+     */
+    private ErrorResponse buildErrorResponse(
+            String userMessage, String devMessage, String errorCode, WebRequest request) {
+        return ErrorResponse.builder()
+                .userMessage(userMessage)
+                .devMessage(devMessage)
+                .errorCode(errorCode)
+                .timestamp(LocalDateTime.now())
+                .path(extractPath(request))
+                .build();
+    }
 
-        String lowerMessage = message.toLowerCase();
-
-        if (lowerMessage.contains("insufficient balance")) {
-            return "INSUFFICIENT_BALANCE";
-        } else if (lowerMessage.contains("insufficient units")) {
-            return "INSUFFICIENT_UNITS";
-        } else if (lowerMessage.contains("duplicate") && lowerMessage.contains("user")) {
-            return "DUPLICATE_USER";
-        } else if (lowerMessage.contains("duplicate") && lowerMessage.contains("fund")) {
-            return "DUPLICATE_FUND";
-        } else if (lowerMessage.contains("invalid amount")) {
-            return "INVALID_AMOUNT";
-        } else if (lowerMessage.contains("invalid units")) {
-            return "INVALID_UNITS";
-        } else if (lowerMessage.contains("mutual fund") || lowerMessage.contains("fund")) {
-            return "MUTUAL_FUND_NOT_FOUND";
-        } else if (lowerMessage.contains("holding")) {
-            return "HOLDING_NOT_FOUND";
-        } else if (lowerMessage.contains("transaction")) {
-            return "TRANSACTION_NOT_FOUND";
-        } else if (lowerMessage.contains("user")) {
-            return "USER_NOT_FOUND";
-        } else {
-            return "RESOURCE_NOT_FOUND";
+    /**
+     * Extracts the request path from WebRequest.
+     *
+     * @param request the web request
+     * @return the request path
+     */
+    private String extractPath(WebRequest request) {
+        if (request instanceof ServletWebRequest) {
+            return ((ServletWebRequest) request).getRequest().getRequestURI();
         }
+        return request.getDescription(false).replace("uri=", "");
     }
 }

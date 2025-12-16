@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.mutualfund.exception.BusinessException;
+import com.mutualfund.exception.ErrorCode;
 import com.mutualfund.model.entity.Holding;
 import com.mutualfund.model.entity.MutualFund;
 import com.mutualfund.model.entity.Transaction;
@@ -88,10 +89,15 @@ public class TransactionService {
                 holdingRepository
                         .findByUserIdAndFundId(userId, request.getFundId())
                         .orElseThrow(
-                                () -> new BusinessException("No holdings found for this fund"));
+                                () ->
+                                        new BusinessException(
+                                                ErrorCode.HOLDING_NOT_FOUND,
+                                                "No holdings found for this fund"));
 
         if (holding.getUnits().compareTo(request.getUnits()) < 0) {
-            throw new BusinessException("Insufficient units. Available: " + holding.getUnits());
+            throw new BusinessException(
+                    ErrorCode.INSUFFICIENT_UNITS,
+                    "Insufficient units. Available: " + holding.getUnits());
         }
 
         Transaction transaction =

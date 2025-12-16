@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.mutualfund.exception.BusinessException;
+import com.mutualfund.exception.ErrorCode;
 import com.mutualfund.exception.ResourceNotFoundException;
 import com.mutualfund.model.entity.MutualFund;
 import com.mutualfund.model.request.MutualFundRequest;
@@ -41,6 +42,7 @@ public class MutualFundService {
                 .ifPresent(
                         existing -> {
                             throw new BusinessException(
+                                    ErrorCode.DUPLICATE_FUND,
                                     "Mutual fund already exists for today: " + request.getName());
                         });
 
