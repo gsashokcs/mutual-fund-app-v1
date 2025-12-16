@@ -6,6 +6,7 @@ A comprehensive RESTful API for managing mutual funds with user authentication, 
 - [Overview](#overview)
 - [Features](#features)
 - [Technology Stack](#technology-stack)
+- [Database Schema](#database-schema)
 - [Prerequisites](#prerequisites)
 - [Setup Instructions](#setup-instructions)
 - [Running the Application](#running-the-application)
@@ -58,6 +59,257 @@ The Mutual Fund Management System is a Spring Boot application that provides a c
 - **Code Quality:** Checkstyle, Spotless (Google Java Format)
 - **Testing:** JUnit 5, Mockito, Spring Boot Test
 - **Code Coverage:** JaCoCo
+
+## Database Schema
+
+### Entity Relationship Diagram
+
+```
+┌─────────────────┐
+│     USERS       │
+├─────────────────┤
+│ id (PK)         │
+│ username (UK)   │
+│ password        │
+│ role            │
+└────────┬────────┘
+         │
+         │ 1
+         │
+         │ *
+┌────────┴────────┐         ┌──────────────────┐
+│   HOLDINGS      │    *    │  MUTUAL_FUNDS    │
+├─────────────────┤────────┼──────────────────┤
+│ id (PK)         │    1    │ fund_id (PK)     │
+│ user_id (FK)    │         │ name             │
+│ fund_id (FK)    │         │ nav              │
+│ units           │         │ nav_date         │
+│ total_value     │         └──────┬───────────┘
+└────────┬────────┘                │
+         │                          │
+         │ 1                        │ 1
+         │                          │
+         │ *                        │ *
+┌────────┴─────────────────────────┴────┐
+│          TRANSACTIONS                 │
+├───────────────────────────────────────┤
+│ transaction_id (PK)                   │
+│ user_id (FK)                          │
+│ fund_id (FK)                          │
+│ units                                 │
+│ nav                                   │
+│ type (BUY/REDEEM)                     │
+│ transaction_date                      │
+└───────────────────────────────────────┘
+```
+
+### Tables
+
+#### 1. USERS
+
+Stores user information for authentication and authorization.
+
+| Column    | Type         | Constraints                    | Description                    |
+|-----------|--------------|--------------------------------|--------------------------------|
+| id        | BIGINT       | PRIMARY KEY, AUTO_INCREMENT    | Unique user identifier         |
+| username  | VARCHAR(50)  | UNIQUE, NOT NULL               | User's login name              |
+| password  | VARCHAR(255) | NOT NULL                       | Encrypted password (BCrypt)    |
+| role      | VARCHAR(20)  | NOT NULL, DEFAULT 'USER'       | User role (USER/ADMIN)         |
+
+**Indexes:**
+- PRIMARY KEY: `id`
+- UNIQUE INDEX: `username`
+
+**JPA Entity:** `User.java`
+
+---
+
+#### 2. MUTUAL_FUNDS
+
+Stores mutual fund information with daily NAV values.
+
+| Column    | Type           | Constraints                         | Description                    |
+|-----------|----------------|-------------------------------------|--------------------------------|
+| fund_id   | BIGINT         | PRIMARY KEY, AUTO_INCREMENT         | Unique fund identifier         |
+| name      | VARCHAR(255)   | NOT NULL                            | Fund name                      |
+| nav       | DECIMAL(10,2)  | NOT NULL, CHECK (nav > 0)           | Net Asset Value per unit       |
+| nav_date  | DATE           | NOT NULL                            | Date of NAV valuation          |
+
+**Indexes:**
+- PRIMARY KEY: `fund_id`
+- UNIQUE INDEX: `(name, nav_date)` - Ensures one NAV per fund per day
+
+**JPA Entity:** `MutualFund.java`
+
+**Business Rules:**
+- A fund can have only one NAV entry per date
+- NAV must be positive (> 0.01)
+- Historical NAV records are maintained
+
+---
+
+#### 3. HOLDINGS
+
+Tracks current fund holdings for each user.
+
+| Column       | Type           | Constraints                              | Description                    |
+|--------------|----------------|------------------------------------------|--------------------------------|
+| id           | BIGINT         | PRIMARY KEY, AUTO_INCREMENT              | Unique holding identifier      |
+| user_id      | BIGINT         | FOREIGN KEY → users(id), NOT NULL        | Reference to user              |
+| fund_id      | BIGINT         | FOREIGN KEY → mutual_funds(fund_id), NOT NULL | Reference to mutual fund |
+| units        | DECIMAL(15,4)  | NOT NULL, CHECK (units >= 0)             | Number of units held           |
+| total_value  | DECIMAL(15,2)  | NOT NULL, CHECK (total_value >= 0)       | Total investment value         |
+
+**Indexes:**
+- PRIMARY KEY: `id`
+- UNIQUE INDEX: `(user_id, fund_id)` - One holding record per user per fund
+- INDEX: `user_id` - For efficient user portfolio queries
+
+**Foreign Keys:**
+- `user_id` → `users(id)`
+- `fund_id` → `mutual_funds(fund_id)`
+
+**JPA Entity:** `Holding.java`
+
+**Business Rules:**
+- Each user can have only one holding record per fund
+- Units and total_value are updated with each transaction
+- Holdings with zero units are retained for historical tracking
+
+---
+
+#### 4. TRANSACTIONS
+
+Records all buy and redeem transactions.
+
+| Column            | Type           | Constraints                              | Description                    |
+|-------------------|----------------|------------------------------------------|--------------------------------|
+| transaction_id    | BIGINT         | PRIMARY KEY, AUTO_INCREMENT              | Unique transaction identifier  |
+| user_id           | BIGINT         | FOREIGN KEY → users(id), NOT NULL        | User who made the transaction  |
+| fund_id           | BIGINT         | FOREIGN KEY → mutual_funds(fund_id), NOT NULL | Fund involved in transaction |
+| units             | DECIMAL(15,4)  | NOT NULL, CHECK (units > 0)              | Number of units transacted     |
+| nav               | DECIMAL(10,2)  | NOT NULL, CHECK (nav > 0)                | NAV at transaction time        |
+| type              | VARCHAR(10)    | NOT NULL, CHECK (type IN ('BUY','REDEEM')) | Transaction type             |
+| transaction_date  | TIMESTAMP      | NOT NULL, DEFAULT CURRENT_TIMESTAMP      | When transaction occurred      |
+
+**Indexes:**
+- PRIMARY KEY: `transaction_id`
+- INDEX: `user_id` - For user transaction history
+- INDEX: `fund_id` - For fund transaction history
+- INDEX: `transaction_date` - For date-based queries
+
+**Foreign Keys:**
+- `user_id` → `users(id)`
+- `fund_id` → `mutual_funds(fund_id)`
+
+**JPA Entity:** `Transaction.java`
+
+**Business Rules:**
+- Transactions are immutable once created
+- BUY transactions increase holdings
+- REDEEM transactions decrease holdings
+- NAV is captured at transaction time for historical accuracy
+
+---
+
+### Relationships
+
+#### One-to-Many Relationships
+
+1. **User → Holdings** (1:N)
+   - One user can have multiple holdings (different funds)
+   - Mapped via: `users.id` → `holdings.user_id`
+   - Fetch: `LAZY`
+
+2. **User → Transactions** (1:N)
+   - One user can have multiple transactions
+   - Mapped via: `users.id` → `transactions.user_id`
+   - Fetch: `LAZY`
+
+3. **MutualFund → Holdings** (1:N)
+   - One fund can be held by multiple users
+   - Mapped via: `mutual_funds.fund_id` → `holdings.fund_id`
+   - Fetch: `LAZY`
+
+4. **MutualFund → Transactions** (1:N)
+   - One fund can have multiple transactions
+   - Mapped via: `mutual_funds.fund_id` → `transactions.fund_id`
+   - Fetch: `LAZY`
+
+### JPA Mapping Details
+
+#### Cascade Operations
+- **No cascade operations** are defined to prevent accidental data deletion
+- Parent entities (User, MutualFund) can exist without children
+- Child entities (Holdings, Transactions) require parent existence
+
+#### Fetch Strategies
+- All relationships use `FetchType.LAZY` for performance optimization
+- Data is loaded only when explicitly accessed
+
+#### Orphan Removal
+- Not enabled - Holdings and Transactions are preserved for audit trail
+
+### Database Constraints Summary
+
+| Constraint Type        | Table         | Description                              |
+|------------------------|---------------|------------------------------------------|
+| Primary Key            | users         | id                                       |
+| Unique                 | users         | username                                 |
+| Primary Key            | mutual_funds  | fund_id                                  |
+| Unique                 | mutual_funds  | (name, nav_date)                         |
+| Primary Key            | holdings      | id                                       |
+| Unique                 | holdings      | (user_id, fund_id)                       |
+| Foreign Key            | holdings      | user_id → users(id)                      |
+| Foreign Key            | holdings      | fund_id → mutual_funds(fund_id)          |
+| Primary Key            | transactions  | transaction_id                           |
+| Foreign Key            | transactions  | user_id → users(id)                      |
+| Foreign Key            | transactions  | fund_id → mutual_funds(fund_id)          |
+| Check                  | mutual_funds  | nav > 0                                  |
+| Check                  | holdings      | units >= 0, total_value >= 0             |
+| Check                  | transactions  | units > 0, nav > 0                       |
+| Check                  | transactions  | type IN ('BUY', 'REDEEM')                |
+
+### Sample Data Flow
+
+#### 1. User Registration
+```sql
+INSERT INTO users (username, password, role) 
+VALUES ('john_doe', '$2a$10$...', 'USER');
+```
+
+#### 2. Admin Adds Mutual Fund
+```sql
+INSERT INTO mutual_funds (name, nav, nav_date) 
+VALUES ('ABC Growth Fund', 150.50, '2025-12-16');
+```
+
+#### 3. User Buys Units
+```sql
+-- Create transaction record
+INSERT INTO transactions (user_id, fund_id, units, nav, type, transaction_date)
+VALUES (1, 1, 10.0000, 150.50, 'BUY', '2025-12-16 10:30:00');
+
+-- Update or create holding
+INSERT INTO holdings (user_id, fund_id, units, total_value)
+VALUES (1, 1, 10.0000, 1505.00)
+ON DUPLICATE KEY UPDATE 
+  units = units + 10.0000,
+  total_value = total_value + 1505.00;
+```
+
+#### 4. User Redeems Units
+```sql
+-- Create transaction record
+INSERT INTO transactions (user_id, fund_id, units, nav, type, transaction_date)
+VALUES (1, 1, 5.0000, 155.75, 'REDEEM', '2025-12-17 14:20:00');
+
+-- Update holding
+UPDATE holdings 
+SET units = units - 5.0000,
+    total_value = total_value - 778.75
+WHERE user_id = 1 AND fund_id = 1;
+```
 
 ## Prerequisites
 
