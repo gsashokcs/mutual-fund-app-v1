@@ -475,7 +475,7 @@ Import the Postman collection for easy API testing:
 
 #### User Management
 - `POST /api/v1/users/register` - Register new user (public)
-- `GET /api/v1/users/{username}` - Get user profile (authenticated)
+- `GET /api/v1/users/{username}` - Get user profile by username (authenticated)
 
 #### Transactions
 - `POST /api/v1/users/{userId}/buy` - Buy mutual fund units
@@ -485,10 +485,11 @@ Import the Postman collection for easy API testing:
 
 #### Admin Operations (ADMIN role required)
 - `POST /api/v1/admin/funds` - Add new mutual fund
-- `PUT /api/v1/admin/funds/{fundId}/nav` - Update fund NAV
-- `GET /api/v1/admin/funds` - List all funds
+- `PUT /api/v1/admin/funds/{fundId}/nav` - Update or create fund NAV for specific date
+- `GET /api/v1/admin/funds` - List all funds with pagination
 - `DELETE /api/v1/admin/funds/{fundId}` - Delete fund
-- `GET /api/v1/admin/users` - List all users
+- `POST /api/v1/admin/users` - Create new user with specified role (USER or ADMIN)
+- `GET /api/v1/admin/users` - List all users with pagination
 - `DELETE /api/v1/admin/users/{userId}` - Delete user
 
 #### Health & Monitoring
@@ -741,8 +742,8 @@ The application implements Basic Authentication with role-based access control f
   
   - **ADMIN Only** (requires ROLE_ADMIN):
     - `/api/v1/admin/**` - All admin operations
-      - Manage mutual funds (add, update NAV, delete)
-      - Manage users (view all, delete)
+      - Manage mutual funds (add, update NAV with date, delete)
+      - Manage users (create with role, view all, delete)
   
   - **Authenticated Users** (requires login):
     - `/api/v1/users/**` - User profile and transactions
@@ -829,9 +830,10 @@ Admins can access any user's transaction data through the security bypass.
 | `GET /api/v1/users/{userId}/holdings` | Authenticated + Ownership | View own holdings |
 | `GET /api/v1/users/{userId}/transactions` | Authenticated + Ownership | View own transactions |
 | `POST /api/v1/admin/funds` | ADMIN only | Add mutual fund |
-| `PUT /api/v1/admin/funds/{id}/nav` | ADMIN only | Update NAV |
+| `PUT /api/v1/admin/funds/{id}/nav` | ADMIN only | Update/create NAV for specific date |
 | `GET /api/v1/admin/funds` | ADMIN only | List all funds |
 | `DELETE /api/v1/admin/funds/{id}` | ADMIN only | Delete fund |
+| `POST /api/v1/admin/users` | ADMIN only | Create user with role (USER/ADMIN) |
 | `GET /api/v1/admin/users` | ADMIN only | List all users |
 | `DELETE /api/v1/admin/users/{id}` | ADMIN only | Delete user |
 | `/actuator/**` | Public | Health monitoring |

@@ -58,6 +58,47 @@ public class UserService implements IUserService {
     }
 
     /**
+     * Creates a new user with specified role (admin operation).
+     *
+     * @param request the user creation request containing username, password, and role
+     * @return UserResponse containing the newly created user's details
+     * @throws BusinessException if username already exists
+     */
+    @Transactional
+    public UserResponse createUser(
+            com.mutualfund.model.request.AdminUserCreationRequest request) {
+        log.info("Admin creating new user: {} with role: {}", request.getUsername(), request.getRole());
+
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new BusinessException(
+                    ErrorCode.DUPLICATE_USER, "Username already exists: " + request.getUsername());
+        }
+
+        User.Role role;
+        try {
+            role = User.Role.valueOf(request.getRole().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException(
+                    ErrorCode.INVALID_INPUT, "Invalid role: " + request.getRole());
+        }
+
+        User user =
+                User.builder()
+                        .username(request.getUsername())
+                        .password(passwordEncoder.encode(request.getPassword()))
+                        .role(role)
+                        .build();
+
+        User savedUser = userRepository.save(user);
+        log.info(
+                "User created successfully by admin with ID: {} and role: {}",
+                savedUser.getId(),
+                savedUser.getRole());
+
+        return mapToResponse(savedUser);
+    }
+
+    /**
      * Retrieves all users in the system.
      *
      * @return List of UserResponse containing all users

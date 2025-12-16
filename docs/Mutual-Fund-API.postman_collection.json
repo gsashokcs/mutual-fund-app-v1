@@ -129,7 +129,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/api/v1/users/{{userId}}",
+							"raw": "{{baseUrl}}/api/v1/users/{{userUsername}}",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -137,10 +137,10 @@
 								"api",
 								"v1",
 								"users",
-								"{{userId}}"
+								"{{userUsername}}"
 							]
 						},
-						"description": "Retrieve user profile information by user ID"
+						"description": "Retrieve user profile information by username"
 					},
 					"response": []
 				}
@@ -362,7 +362,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"nav\": 155.50\n}"
+							"raw": "{\n    \"nav\": 155.50,\n    \"navDate\": \"2025-12-16\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/v1/admin/funds/{{fundId}}/nav",
@@ -378,7 +378,7 @@
 								"nav"
 							]
 						},
-						"description": "Update the Net Asset Value for a mutual fund (Admin only)"
+						"description": "Update or create NAV for a mutual fund on a specific date (Admin only)"
 					},
 					"response": []
 				},
@@ -436,6 +436,50 @@
 							]
 						},
 						"description": "Remove a mutual fund from the system (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('userId', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"newuser\",\n    \"password\": \"password123\",\n    \"role\": \"USER\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"users"
+							]
+						},
+						"description": "Create a new user with specified role (USER or ADMIN) - Admin only"
 					},
 					"response": []
 				},

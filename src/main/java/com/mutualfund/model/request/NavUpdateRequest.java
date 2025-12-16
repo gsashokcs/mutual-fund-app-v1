@@ -1,6 +1,7 @@
 package com.mutualfund.model.request;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
@@ -19,4 +20,7 @@ public class NavUpdateRequest {
     @NotNull(message = "NAV is required")
     @DecimalMin(value = "0.01", message = "NAV must be greater than 0")
     private BigDecimal nav;
+
+    @NotNull(message = "NAV date is required")
+    private LocalDate navDate;
 }

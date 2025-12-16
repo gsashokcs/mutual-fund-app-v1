@@ -14,6 +14,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.mutualfund.model.entity.MutualFund;
+import com.mutualfund.model.entity.Nav;
+import com.mutualfund.model.request.AdminUserCreationRequest;
 import com.mutualfund.model.request.MutualFundRequest;
 import com.mutualfund.model.request.NavUpdateRequest;
 import com.mutualfund.model.response.UserResponse;
@@ -55,21 +57,22 @@ public class AdminController {
     }
 
     /**
-     * Updates the NAV for a mutual fund for the current date.
+     * Updates or creates the NAV for a mutual fund on a specific date.
      *
      * @param fundId the ID of the fund to update
-     * @param request the NAV update request
-     * @return ResponseEntity with updated MutualFund and HTTP 200 status
+     * @param request the NAV update request with nav value and date
+     * @return ResponseEntity with Nav entity and HTTP 200 status
      */
     @PutMapping("/funds/{fundId}/nav")
     @Operation(
             summary = "Update NAV",
-            description = "Updates the Net Asset Value for a mutual fund (current date only)")
-    public ResponseEntity<MutualFund> updateNav(
+            description =
+                    "Updates or creates Net Asset Value for a mutual fund on a specific date")
+    public ResponseEntity<Nav> updateNav(
             @PathVariable @Positive(message = "Fund ID must be positive") Long fundId,
             @Valid @RequestBody NavUpdateRequest request) {
-        MutualFund fund = mutualFundService.updateNav(fundId, request);
-        return ResponseEntity.ok(fund);
+        Nav nav = mutualFundService.updateNav(fundId, request);
+        return ResponseEntity.ok(nav);
     }
 
     /**
@@ -105,6 +108,22 @@ public class AdminController {
             @PathVariable @Positive(message = "Fund ID must be positive") Long fundId) {
         mutualFundService.deleteMutualFund(fundId);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Creates a new user with specified role (admin operation).
+     *
+     * @param request the user creation request with username, password, and role
+     * @return ResponseEntity with UserResponse and HTTP 201 status
+     */
+    @PostMapping("/users")
+    @Operation(
+            summary = "Create user",
+            description = "Creates a new user with specified role (USER or ADMIN)")
+    public ResponseEntity<UserResponse> createUser(
+            @Valid @RequestBody AdminUserCreationRequest request) {
+        UserResponse user = userService.createUser(request);
+        return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
 
     /**
