@@ -475,7 +475,7 @@ Import the Postman collection for easy API testing:
 
 #### User Management
 - `POST /api/v1/users/register` - Register new user (public)
-- `GET /api/v1/users/{userId}` - Get user profile (authenticated)
+- `GET /api/v1/users/{username}` - Get user profile (authenticated)
 
 #### Transactions
 - `POST /api/v1/users/{userId}/buy` - Buy mutual fund units
@@ -814,7 +814,7 @@ Admins can access any user's transaction data through the security bypass.
    - Other endpoints require authentication
 
 3. **Authorization - Data Level**:
-   - Services call `SecurityService.validateUserAccess(userId)`
+   - Services call `SecurityService.validateUserAccess(userId)` or `validateUserAccessByUsername(username)`
    - Validates user owns the requested data
    - Admin role bypasses ownership check
 
@@ -823,7 +823,7 @@ Admins can access any user's transaction data through the security bypass.
 | Endpoint Pattern | Access Level | Notes |
 |-----------------|-------------|-------|
 | `POST /api/v1/users/register` | Public | User registration |
-| `GET /api/v1/users/{userId}` | Authenticated + Ownership | View own profile |
+| `GET /api/v1/users/{username}` | Authenticated + Ownership | View own profile |
 | `POST /api/v1/users/{userId}/buy` | Authenticated + Ownership | Buy units for own account |
 | `POST /api/v1/users/{userId}/redeem` | Authenticated + Ownership | Redeem own units |
 | `GET /api/v1/users/{userId}/holdings` | Authenticated + Ownership | View own holdings |

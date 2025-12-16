@@ -131,6 +131,33 @@ public class UserService implements IUserService {
     }
 
     /**
+     * Retrieves a user by their username. Regular users can only access their own profile. Admin
+     * users can access any profile.
+     *
+     * @param username the username of the user to retrieve
+     * @return UserResponse containing the user's details
+     * @throws ResourceNotFoundException if user is not found
+     * @throws BusinessException if user attempts to access another user's profile
+     */
+    @Transactional(readOnly = true)
+    public UserResponse getUserByUsername(String username) {
+        log.info("Fetching user by username: {}", username);
+
+        // Validate user access - users can only view their own profile unless they are admin
+        securityService.validateUserAccessByUsername(username);
+
+        User user =
+                userRepository
+                        .findByUsername(username)
+                        .orElseThrow(
+                                () ->
+                                        new ResourceNotFoundException(
+                                                ErrorCode.USER_NOT_FOUND,
+                                                "User not found: " + username));
+        return mapToResponse(user);
+    }
+
+    /**
      * Finds a user by their username.
      *
      * @param username the username to search for

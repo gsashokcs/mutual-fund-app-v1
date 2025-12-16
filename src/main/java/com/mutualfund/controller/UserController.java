@@ -1,7 +1,6 @@
 package com.mutualfund.controller;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,19 +42,18 @@ public class UserController {
     }
 
     /**
-     * Retrieves a user's profile by their ID.
+     * Retrieves a user's profile by their username.
      *
-     * @param userId the ID of the user to retrieve
+     * @param username the username of the user to retrieve
      * @return ResponseEntity with UserResponse and HTTP 200 status
      */
-    @GetMapping("/{userId}")
+    @GetMapping("/{username}")
     @SecurityRequirement(name = "basicAuth")
     @Operation(
             summary = "Get user profile",
-            description = "Retrieves user profile information by user ID")
-    public ResponseEntity<UserResponse> getUserProfile(
-            @PathVariable @Positive(message = "User ID must be positive") Long userId) {
-        UserResponse response = userService.getUserById(userId);
+            description = "Retrieves user profile information by username")
+    public ResponseEntity<UserResponse> getUserProfile(@PathVariable String username) {
+        UserResponse response = userService.getUserByUsername(username);
         return ResponseEntity.ok(response);
     }
 }

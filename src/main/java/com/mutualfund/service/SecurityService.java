@@ -54,6 +54,28 @@ public class SecurityService {
     }
 
     /**
+     * Validates that the authenticated user can access resources for the given username. Admin
+     * users can access any user's resources. Regular users can only access their own resources.
+     *
+     * @param username the username of the user whose resources are being accessed
+     * @throws BusinessException if access is denied
+     */
+    public void validateUserAccessByUsername(String username) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String authenticatedUsername = authentication.getName();
+
+        // Check if user is admin
+        if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            return; // Admin can access any user's data
+        }
+
+        // Check if the authenticated user is accessing their own data
+        if (!authenticatedUsername.equals(username)) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+    }
+
+    /**
      * Gets the currently authenticated user's username.
      *
      * @return the username of the authenticated user
