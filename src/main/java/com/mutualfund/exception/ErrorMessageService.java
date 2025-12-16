@@ -18,6 +18,7 @@ public class ErrorMessageService {
     private Map<String, ErrorMessageDetail> errorMessages = new HashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    /** Loads error messages from error-messages.json file on application startup. */
     @PostConstruct
     public void loadErrorMessages() {
         try {
@@ -31,6 +32,12 @@ public class ErrorMessageService {
         }
     }
 
+    /**
+     * Retrieves error message details for a given error code.
+     *
+     * @param errorCode the error code to look up
+     * @return ErrorMessageDetail containing user and developer messages
+     */
     public ErrorMessageDetail getErrorMessage(String errorCode) {
         return errorMessages.getOrDefault(
                 errorCode,

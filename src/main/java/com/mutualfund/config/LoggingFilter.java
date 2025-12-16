@@ -20,6 +20,15 @@ public class LoggingFilter extends OncePerRequestFilter {
     private static final String TRANSACTION_ID = "transactionId";
     private static final String USERNAME = "username";
 
+    /**
+     * Adds transaction ID and username to MDC for logging context.
+     *
+     * @param request the HTTP request
+     * @param response the HTTP response
+     * @param filterChain the filter chain
+     * @throws ServletException if servlet error occurs
+     * @throws IOException if I/O error occurs
+     */
     @Override
     protected void doFilterInternal(
             HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

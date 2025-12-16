@@ -64,7 +64,7 @@ class TransactionServiceTest {
     }
 
     @Test
-    void buyUnits_Success() {
+    void buyUnitsSuccess() {
         TransactionRequest request = new TransactionRequest(1L, new BigDecimal("5.0000"));
 
         when(mutualFundService.getCurrentMutualFund(1L)).thenReturn(testFund);
@@ -82,7 +82,7 @@ class TransactionServiceTest {
     }
 
     @Test
-    void redeemUnits_Success() {
+    void redeemUnitsSuccess() {
         TransactionRequest request = new TransactionRequest(1L, new BigDecimal("3.0000"));
 
         when(mutualFundService.getCurrentMutualFund(1L)).thenReturn(testFund);
@@ -98,7 +98,7 @@ class TransactionServiceTest {
     }
 
     @Test
-    void redeemUnits_NoHoldings_ThrowsException() {
+    void redeemUnitsNoHoldingsThrowsException() {
         TransactionRequest request = new TransactionRequest(1L, new BigDecimal("3.0000"));
 
         when(mutualFundService.getCurrentMutualFund(1L)).thenReturn(testFund);
@@ -109,7 +109,7 @@ class TransactionServiceTest {
     }
 
     @Test
-    void redeemUnits_InsufficientUnits_ThrowsException() {
+    void redeemUnitsInsufficientUnitsThrowsException() {
         TransactionRequest request = new TransactionRequest(1L, new BigDecimal("15.0000"));
 
         when(mutualFundService.getCurrentMutualFund(1L)).thenReturn(testFund);

@@ -70,7 +70,7 @@ class TransactionControllerTest {
 
     @Test
     @WithMockUser(username = "testuser", roles = "USER")
-    void buyUnits_Success() throws Exception {
+    void buyUnitsSuccess() throws Exception {
         when(transactionService.buyUnits(anyLong(), any(TransactionRequest.class)))
                 .thenReturn(transactionResponse);
 
@@ -86,7 +86,7 @@ class TransactionControllerTest {
 
     @Test
     @WithMockUser(username = "testuser", roles = "USER")
-    void redeemUnits_Success() throws Exception {
+    void redeemUnitsSuccess() throws Exception {
         transactionResponse.setType("REDEEM");
         when(transactionService.redeemUnits(anyLong(), any(TransactionRequest.class)))
                 .thenReturn(transactionResponse);
@@ -103,7 +103,7 @@ class TransactionControllerTest {
 
     @Test
     @WithMockUser(username = "testuser", roles = "USER")
-    void getUserHoldings_Success() throws Exception {
+    void getUserHoldingsSuccess() throws Exception {
         List<HoldingResponse> holdings = Arrays.asList(holdingResponse);
         when(transactionService.getUserHoldings(1L)).thenReturn(holdings);
 
@@ -116,7 +116,7 @@ class TransactionControllerTest {
 
     @Test
     @WithMockUser(username = "testuser", roles = "USER")
-    void getUserTransactions_Success() throws Exception {
+    void getUserTransactionsSuccess() throws Exception {
         List<TransactionResponse> transactions = Arrays.asList(transactionResponse);
         when(transactionService.getUserTransactions(1L)).thenReturn(transactions);
 
@@ -127,7 +127,7 @@ class TransactionControllerTest {
     }
 
     @Test
-    void buyUnits_Unauthorized() throws Exception {
+    void buyUnitsUnauthorized() throws Exception {
         mockMvc.perform(
                         post("/api/v1/users/1/buy")
                                 .with(csrf())

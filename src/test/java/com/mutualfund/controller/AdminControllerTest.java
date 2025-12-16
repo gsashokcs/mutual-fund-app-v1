@@ -66,7 +66,7 @@ class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
-    void addMutualFund_Success() throws Exception {
+    void addMutualFundSuccess() throws Exception {
         when(mutualFundService.addMutualFund(any(MutualFundRequest.class))).thenReturn(testFund);
 
         mockMvc.perform(
@@ -81,7 +81,7 @@ class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "user", roles = "USER")
-    void addMutualFund_Forbidden_NonAdmin() throws Exception {
+    void addMutualFundForbiddenNonAdmin() throws Exception {
         mockMvc.perform(
                         post("/api/v1/admin/funds")
                                 .with(csrf())
@@ -92,7 +92,7 @@ class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
-    void updateNav_Success() throws Exception {
+    void updateNavSuccess() throws Exception {
         NavUpdateRequest navRequest = new NavUpdateRequest(new BigDecimal("120.00"));
         when(mutualFundService.updateNav(anyLong(), any(NavUpdateRequest.class)))
                 .thenReturn(testFund);
@@ -108,7 +108,7 @@ class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
-    void getAllFunds_Success() throws Exception {
+    void getAllFundsSuccess() throws Exception {
         List<MutualFund> funds = Arrays.asList(testFund);
         when(mutualFundService.getAllMutualFunds()).thenReturn(funds);
 
@@ -120,7 +120,7 @@ class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
-    void deleteMutualFund_Success() throws Exception {
+    void deleteMutualFundSuccess() throws Exception {
         doNothing().when(mutualFundService).deleteMutualFund(1L);
 
         mockMvc.perform(delete("/api/v1/admin/funds/1").with(csrf()))
@@ -129,7 +129,7 @@ class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
-    void getAllUsers_Success() throws Exception {
+    void getAllUsersSuccess() throws Exception {
         List<UserResponse> users = Arrays.asList(userResponse);
         when(userService.getAllUsers()).thenReturn(users);
 
@@ -141,7 +141,7 @@ class AdminControllerTest {
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
-    void deleteUser_Success() throws Exception {
+    void deleteUserSuccess() throws Exception {
         doNothing().when(userService).deleteUser(1L);
 
         mockMvc.perform(delete("/api/v1/admin/users/1").with(csrf()))

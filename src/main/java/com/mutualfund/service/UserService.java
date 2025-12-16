@@ -22,11 +22,18 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UserService {
+public class UserService implements IUserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * Registers a new user in the system.
+     *
+     * @param request the user registration request containing username and password
+     * @return UserResponse containing the newly created user's details
+     * @throws BusinessException if username already exists
+     */
     @Transactional
     public UserResponse registerUser(UserRegistrationRequest request) {
         log.info("Registering new user: {}", request.getUsername());
@@ -49,12 +56,23 @@ public class UserService {
         return mapToResponse(savedUser);
     }
 
+    /**
+     * Retrieves all users in the system.
+     *
+     * @return List of UserResponse containing all users
+     */
     @Transactional(readOnly = true)
     public List<UserResponse> getAllUsers() {
         log.info("Fetching all users");
         return userRepository.findAll().stream().map(this::mapToResponse).toList();
     }
 
+    /**
+     * Retrieves all users with pagination support.
+     *
+     * @param pageable the pagination information
+     * @return Page of UserResponse containing users
+     */
     @Transactional(readOnly = true)
     public Page<UserResponse> getAllUsers(Pageable pageable) {
         log.info(
@@ -64,6 +82,13 @@ public class UserService {
         return userRepository.findAll(pageable).map(this::mapToResponse);
     }
 
+    /**
+     * Retrieves a user by their ID.
+     *
+     * @param userId the ID of the user to retrieve
+     * @return UserResponse containing the user's details
+     * @throws ResourceNotFoundException if user is not found
+     */
     @Transactional(readOnly = true)
     public UserResponse getUserById(Long userId) {
         log.info("Fetching user by ID: {}", userId);
@@ -79,6 +104,12 @@ public class UserService {
         return mapToResponse(user);
     }
 
+    /**
+     * Deletes a user from the system.
+     *
+     * @param userId the ID of the user to delete
+     * @throws ResourceNotFoundException if user is not found
+     */
     @Transactional
     public void deleteUser(Long userId) {
         log.info("Deleting user with ID: {}", userId);
@@ -92,6 +123,13 @@ public class UserService {
         log.info("User deleted successfully: {}", userId);
     }
 
+    /**
+     * Finds a user by their username.
+     *
+     * @param username the username to search for
+     * @return User entity
+     * @throws ResourceNotFoundException if user is not found
+     */
     @Transactional(readOnly = true)
     public User findByUsername(String username) {
         return userRepository

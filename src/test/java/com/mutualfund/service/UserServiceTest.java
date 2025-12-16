@@ -50,7 +50,7 @@ class UserServiceTest {
     }
 
     @Test
-    void registerUser_Success() {
+    void registerUserSuccess() {
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
         when(userRepository.save(any(User.class))).thenReturn(testUser);
@@ -64,7 +64,7 @@ class UserServiceTest {
     }
 
     @Test
-    void registerUser_UsernameExists_ThrowsException() {
+    void registerUserUsernameExistsThrowsException() {
         when(userRepository.existsByUsername(anyString())).thenReturn(true);
 
         assertThrows(BusinessException.class, () -> userService.registerUser(registrationRequest));
@@ -72,7 +72,7 @@ class UserServiceTest {
     }
 
     @Test
-    void getAllUsers_Success() {
+    void getAllUsersSuccess() {
         List<User> users = Arrays.asList(testUser);
         when(userRepository.findAll()).thenReturn(users);
 
@@ -84,7 +84,7 @@ class UserServiceTest {
     }
 
     @Test
-    void getUserById_Success() {
+    void getUserByIdSuccess() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
 
         UserResponse response = userService.getUserById(1L);
@@ -95,14 +95,14 @@ class UserServiceTest {
     }
 
     @Test
-    void getUserById_NotFound_ThrowsException() {
+    void getUserByIdNotFoundThrowsException() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> userService.getUserById(1L));
     }
 
     @Test
-    void deleteUser_Success() {
+    void deleteUserSuccess() {
         when(userRepository.existsById(1L)).thenReturn(true);
 
         userService.deleteUser(1L);
@@ -111,7 +111,7 @@ class UserServiceTest {
     }
 
     @Test
-    void deleteUser_NotFound_ThrowsException() {
+    void deleteUserNotFoundThrowsException() {
         when(userRepository.existsById(1L)).thenReturn(false);
 
         assertThrows(ResourceNotFoundException.class, () -> userService.deleteUser(1L));
@@ -119,7 +119,7 @@ class UserServiceTest {
     }
 
     @Test
-    void findByUsername_Success() {
+    void findByUsernameSuccess() {
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
 
         User user = userService.findByUsername("testuser");
@@ -129,7 +129,7 @@ class UserServiceTest {
     }
 
     @Test
-    void findByUsername_NotFound_ThrowsException() {
+    void findByUsernameNotFoundThrowsException() {
         when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
 
         assertThrows(

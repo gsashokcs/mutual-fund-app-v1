@@ -22,10 +22,17 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class MutualFundService {
+public class MutualFundService implements IMutualFundService {
 
     private final MutualFundRepository mutualFundRepository;
 
+    /**
+     * Adds a new mutual fund to the system with current date's NAV.
+     *
+     * @param request the mutual fund request containing name and NAV
+     * @return MutualFund entity that was created
+     * @throws BusinessException if fund already exists for the current date
+     */
     @Transactional
     public MutualFund addMutualFund(MutualFundRequest request) {
         log.info("Adding new mutual fund: {}", request.getName());
@@ -54,6 +61,14 @@ public class MutualFundService {
         return savedFund;
     }
 
+    /**
+     * Updates the Net Asset Value (NAV) for a mutual fund for the current date.
+     *
+     * @param fundId the ID of the fund to update
+     * @param request the NAV update request containing the new NAV value
+     * @return MutualFund entity with updated NAV
+     * @throws ResourceNotFoundException if fund is not found for the current date
+     */
     @Transactional
     public MutualFund updateNav(Long fundId, NavUpdateRequest request) {
         log.info("Updating NAV for fund ID: {}", fundId);
@@ -77,12 +92,23 @@ public class MutualFundService {
         return updatedFund;
     }
 
+    /**
+     * Retrieves all mutual funds in the system.
+     *
+     * @return List of all MutualFund entities
+     */
     @Transactional(readOnly = true)
     public List<MutualFund> getAllMutualFunds() {
         log.info("Fetching all mutual funds");
         return mutualFundRepository.findAll();
     }
 
+    /**
+     * Retrieves all mutual funds with pagination support.
+     *
+     * @param pageable the pagination information
+     * @return Page of MutualFund entities
+     */
     @Transactional(readOnly = true)
     public Page<MutualFund> getAllMutualFunds(Pageable pageable) {
         log.info(
@@ -92,6 +118,13 @@ public class MutualFundService {
         return mutualFundRepository.findAll(pageable);
     }
 
+    /**
+     * Retrieves a mutual fund's current NAV for today's date.
+     *
+     * @param fundId the ID of the fund to retrieve
+     * @return MutualFund entity with current date's NAV
+     * @throws ResourceNotFoundException if fund is not found for the current date
+     */
     @Transactional(readOnly = true)
     public MutualFund getCurrentMutualFund(Long fundId) {
         log.info("Fetching mutual fund by ID: {} for current date", fundId);
@@ -108,6 +141,12 @@ public class MutualFundService {
                                                 + " for current date"));
     }
 
+    /**
+     * Deletes a mutual fund from the system.
+     *
+     * @param fundId the ID of the fund to delete
+     * @throws ResourceNotFoundException if fund is not found
+     */
     @Transactional
     public void deleteMutualFund(Long fundId) {
         log.info("Deleting mutual fund with ID: {}", fundId);

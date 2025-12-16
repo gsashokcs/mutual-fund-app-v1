@@ -21,7 +21,6 @@ import com.mutualfund.service.MutualFundService;
 import com.mutualfund.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -30,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Validated
 @PreAuthorize("hasRole('ADMIN')")
-@SecurityRequirement(name = "basicAuth")
+// @SecurityRequirement(name = "basicAuth")
 @Tag(
         name = "Admin Operations",
         description = "Administrative endpoints for managing funds and users")
@@ -39,6 +38,12 @@ public class AdminController {
     private final MutualFundService mutualFundService;
     private final UserService userService;
 
+    /**
+     * Creates a new mutual fund with current date's NAV.
+     *
+     * @param request the mutual fund request with name and NAV
+     * @return ResponseEntity with MutualFund and HTTP 201 status
+     */
     @PostMapping("/funds")
     @Operation(
             summary = "Add mutual fund",
@@ -48,6 +53,13 @@ public class AdminController {
         return new ResponseEntity<>(fund, HttpStatus.CREATED);
     }
 
+    /**
+     * Updates the NAV for a mutual fund for the current date.
+     *
+     * @param fundId the ID of the fund to update
+     * @param request the NAV update request
+     * @return ResponseEntity with updated MutualFund and HTTP 200 status
+     */
     @PutMapping("/funds/{fundId}/nav")
     @Operation(
             summary = "Update NAV",
@@ -59,6 +71,14 @@ public class AdminController {
         return ResponseEntity.ok(fund);
     }
 
+    /**
+     * Retrieves all mutual funds with pagination.
+     *
+     * @param page the page number (default 0)
+     * @param size the page size (default 10)
+     * @param sortBy the field to sort by (default fundId)
+     * @return ResponseEntity with Page of MutualFund and HTTP 200 status
+     */
     @GetMapping("/funds")
     @Operation(
             summary = "List all funds",
@@ -72,6 +92,12 @@ public class AdminController {
         return ResponseEntity.ok(funds);
     }
 
+    /**
+     * Deletes a mutual fund from the system.
+     *
+     * @param fundId the ID of the fund to delete
+     * @return ResponseEntity with HTTP 204 status
+     */
     @DeleteMapping("/funds/{fundId}")
     @Operation(summary = "Delete fund", description = "Removes a mutual fund from the system")
     public ResponseEntity<Void> deleteFund(
@@ -80,6 +106,14 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Retrieves all users with pagination.
+     *
+     * @param page the page number (default 0)
+     * @param size the page size (default 10)
+     * @param sortBy the field to sort by (default id)
+     * @return ResponseEntity with Page of UserResponse and HTTP 200 status
+     */
     @GetMapping("/users")
     @Operation(
             summary = "List all users",
@@ -93,6 +127,12 @@ public class AdminController {
         return ResponseEntity.ok(users);
     }
 
+    /**
+     * Deletes a user from the system.
+     *
+     * @param userId the ID of the user to delete
+     * @return ResponseEntity with HTTP 204 status
+     */
     @DeleteMapping("/users/{userId}")
     @Operation(summary = "Delete user", description = "Removes a user from the system")
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {

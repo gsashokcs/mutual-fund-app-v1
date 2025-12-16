@@ -20,7 +20,6 @@ import com.mutualfund.model.response.TransactionResponse;
 import com.mutualfund.service.TransactionService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -28,12 +27,19 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/users/{userId}")
 @RequiredArgsConstructor
 @Validated
-@SecurityRequirement(name = "basicAuth")
+// @SecurityRequirement(name = "basicAuth")
 @Tag(name = "Transactions", description = "User transaction and holdings management endpoints")
 public class TransactionController {
 
     private final TransactionService transactionService;
 
+    /**
+     * Processes a buy transaction for mutual fund units.
+     *
+     * @param userId the ID of the user making the purchase
+     * @param request the transaction request with fund ID and units
+     * @return ResponseEntity with TransactionResponse and HTTP 201 status
+     */
     @PostMapping("/buy")
     @Operation(
             summary = "Buy units",
@@ -45,6 +51,13 @@ public class TransactionController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    /**
+     * Processes a redemption transaction for mutual fund units.
+     *
+     * @param userId the ID of the user redeeming units
+     * @param request the transaction request with fund ID and units
+     * @return ResponseEntity with TransactionResponse and HTTP 201 status
+     */
     @PostMapping("/redeem")
     @Operation(
             summary = "Redeem units",
@@ -56,6 +69,12 @@ public class TransactionController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    /**
+     * Retrieves all mutual fund holdings for a user.
+     *
+     * @param userId the ID of the user
+     * @return ResponseEntity with List of HoldingResponse and HTTP 200 status
+     */
     @GetMapping("/holdings")
     @Operation(
             summary = "View holdings",
@@ -66,6 +85,15 @@ public class TransactionController {
         return ResponseEntity.ok(holdings);
     }
 
+    /**
+     * Retrieves transaction history for a user with pagination.
+     *
+     * @param userId the ID of the user
+     * @param page the page number (default 0)
+     * @param size the page size (default 10)
+     * @param sortBy the field to sort by (default transactionDate)
+     * @return ResponseEntity with Page of TransactionResponse and HTTP 200 status
+     */
     @GetMapping("/transactions")
     @Operation(
             summary = "View transactions",

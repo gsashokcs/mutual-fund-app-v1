@@ -43,7 +43,7 @@ class UserControllerTest {
     }
 
     @Test
-    void registerUser_Success() throws Exception {
+    void registerUserSuccess() throws Exception {
         when(userService.registerUser(any(UserRegistrationRequest.class))).thenReturn(userResponse);
 
         mockMvc.perform(
@@ -57,7 +57,7 @@ class UserControllerTest {
     }
 
     @Test
-    void registerUser_InvalidRequest_BadRequest() throws Exception {
+    void registerUserInvalidRequestBadRequest() throws Exception {
         UserRegistrationRequest invalidRequest = new UserRegistrationRequest("ab", "123");
 
         mockMvc.perform(
@@ -70,7 +70,7 @@ class UserControllerTest {
 
     @Test
     @WithMockUser(username = "testuser", roles = "USER")
-    void getUserProfile_Success() throws Exception {
+    void getUserProfileSuccess() throws Exception {
         when(userService.getUserById(1L)).thenReturn(userResponse);
 
         mockMvc.perform(get("/api/v1/users/1"))
@@ -80,7 +80,7 @@ class UserControllerTest {
     }
 
     @Test
-    void getUserProfile_Unauthorized() throws Exception {
+    void getUserProfileUnauthorized() throws Exception {
         mockMvc.perform(get("/api/v1/users/1")).andExpect(status().isUnauthorized());
     }
 }

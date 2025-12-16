@@ -26,12 +26,21 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class TransactionService {
+public class TransactionService implements ITransactionService {
 
     private final TransactionRepository transactionRepository;
     private final HoldingRepository holdingRepository;
     private final MutualFundService mutualFundService;
+    private final com.mutualfund.service.strategy.TransactionStrategyFactory strategyFactory;
 
+    /**
+     * Processes a buy transaction for mutual fund units.
+     *
+     * @param userId the ID of the user making the purchase
+     * @param request the transaction request containing fund ID and units
+     * @return TransactionResponse containing transaction details
+     * @throws ResourceNotFoundException if mutual fund is not found
+     */
     @Transactional
     public TransactionResponse buyUnits(Long userId, TransactionRequest request) {
         log.info(
@@ -52,12 +61,21 @@ public class TransactionService {
 
         Transaction savedTransaction = transactionRepository.save(transaction);
 
-        updateHolding(userId, request.getFundId(), request.getUnits(), fund.getNav(), true);
+        processHoldingUpdate(userId, request.getFundId(), request.getUnits(), fund.getNav(), "BUY");
 
         log.info("Buy transaction completed successfully: {}", savedTransaction.getTransactionId());
         return mapToTransactionResponse(savedTransaction, fund.getName());
     }
 
+    /**
+     * Processes a redemption transaction for mutual fund units.
+     *
+     * @param userId the ID of the user redeeming units
+     * @param request the transaction request containing fund ID and units
+     * @return TransactionResponse containing transaction details
+     * @throws BusinessException if holdings not found or insufficient units
+     * @throws ResourceNotFoundException if mutual fund is not found
+     */
     @Transactional
     public TransactionResponse redeemUnits(Long userId, TransactionRequest request) {
         log.info(
@@ -93,7 +111,8 @@ public class TransactionService {
 
         Transaction savedTransaction = transactionRepository.save(transaction);
 
-        updateHolding(userId, request.getFundId(), request.getUnits(), fund.getNav(), false);
+        processHoldingUpdate(
+                userId, request.getFundId(), request.getUnits(), fund.getNav(), "REDEEM");
 
         log.info(
                 "Redeem transaction completed successfully: {}",
@@ -101,6 +120,12 @@ public class TransactionService {
         return mapToTransactionResponse(savedTransaction, fund.getName());
     }
 
+    /**
+     * Retrieves all mutual fund holdings for a user with current values.
+     *
+     * @param userId the ID of the user
+     * @return List of HoldingResponse with current NAV and values
+     */
     @Transactional(readOnly = true)
     public List<HoldingResponse> getUserHoldings(Long userId) {
         log.info("Fetching holdings for user ID: {}", userId);
@@ -113,6 +138,12 @@ public class TransactionService {
                 .toList();
     }
 
+    /**
+     * Retrieves all transactions for a user.
+     *
+     * @param userId the ID of the user
+     * @return List of TransactionResponse containing transaction history
+     */
     @Transactional(readOnly = true)
     public List<TransactionResponse> getUserTransactions(Long userId) {
         log.info("Fetching transactions for user ID: {}", userId);
@@ -122,6 +153,13 @@ public class TransactionService {
         return transactions.stream().map(t -> mapToTransactionResponse(t, "")).toList();
     }
 
+    /**
+     * Retrieves all transactions for a user with pagination support.
+     *
+     * @param userId the ID of the user
+     * @param pageable the pagination information
+     * @return Page of TransactionResponse containing transaction history
+     */
     @Transactional(readOnly = true)
     public Page<TransactionResponse> getUserTransactions(Long userId, Pageable pageable) {
         log.info(
@@ -135,8 +173,18 @@ public class TransactionService {
                 .map(t -> mapToTransactionResponse(t, ""));
     }
 
-    private void updateHolding(
-            Long userId, Long fundId, BigDecimal units, BigDecimal nav, boolean isBuy) {
+    /**
+     * Processes holding update using the appropriate transaction strategy. Demonstrates Strategy
+     * pattern for polymorphic transaction processing.
+     *
+     * @param userId the user ID
+     * @param fundId the fund ID
+     * @param units the number of units
+     * @param nav the net asset value
+     * @param transactionType the type of transaction (BUY or REDEEM)
+     */
+    private void processHoldingUpdate(
+            Long userId, Long fundId, BigDecimal units, BigDecimal nav, String transactionType) {
         Holding holding =
                 holdingRepository
                         .findByUserIdAndFundId(userId, fundId)
@@ -149,12 +197,9 @@ public class TransactionService {
                                                 .totalValue(BigDecimal.ZERO)
                                                 .build());
 
-        BigDecimal transactionValue = units.multiply(nav);
-        BigDecimal unitsChange = isBuy ? units : units.negate();
-        BigDecimal valueChange = isBuy ? transactionValue : transactionValue.negate();
-
-        holding.setUnits(holding.getUnits().add(unitsChange));
-        holding.setTotalValue(holding.getTotalValue().add(valueChange));
+        com.mutualfund.service.strategy.ITransactionStrategy strategy =
+                strategyFactory.getStrategy(transactionType);
+        strategy.processTransaction(holding, units, nav);
 
         holdingRepository.save(holding);
     }
