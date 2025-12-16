@@ -53,7 +53,6 @@ The Mutual Fund Management System is a Spring Boot application that provides a c
 - **Java Version:** 17
 - **Database:** H2 (in-memory for dev/test, file-based for production)
 - **Security:** Spring Security with Basic Authentication
-- **Caching:** Spring Cache with EhCache
 - **API Documentation:** SpringDoc OpenAPI 3
 - **Build Tool:** Maven
 - **Code Quality:** Checkstyle, Spotless (Google Java Format)

@@ -3,9 +3,6 @@ package com.mutualfund.service;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,7 +27,6 @@ public class MutualFundService {
     private final MutualFundRepository mutualFundRepository;
 
     @Transactional
-    @CacheEvict(value = "allMutualFunds", allEntries = true)
     public MutualFund addMutualFund(MutualFundRequest request) {
         log.info("Adding new mutual fund: {}", request.getName());
 
@@ -59,12 +55,6 @@ public class MutualFundService {
     }
 
     @Transactional
-    @Caching(
-            evict = {
-                @CacheEvict(value = "mutualFunds", key = "#fundId"),
-                @CacheEvict(value = "allMutualFunds", allEntries = true),
-                @CacheEvict(value = "holdings", allEntries = true)
-            })
     public MutualFund updateNav(Long fundId, NavUpdateRequest request) {
         log.info("Updating NAV for fund ID: {}", fundId);
 
@@ -88,7 +78,6 @@ public class MutualFundService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "allMutualFunds", key = "'all'")
     public List<MutualFund> getAllMutualFunds() {
         log.info("Fetching all mutual funds");
         return mutualFundRepository.findAll();
@@ -104,7 +93,6 @@ public class MutualFundService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "mutualFunds", key = "#fundId")
     public MutualFund getCurrentMutualFund(Long fundId) {
         log.info("Fetching mutual fund by ID: {} for current date", fundId);
 
@@ -121,12 +109,6 @@ public class MutualFundService {
     }
 
     @Transactional
-    @Caching(
-            evict = {
-                @CacheEvict(value = "mutualFunds", key = "#fundId"),
-                @CacheEvict(value = "allMutualFunds", allEntries = true),
-                @CacheEvict(value = "holdings", allEntries = true)
-            })
     public void deleteMutualFund(Long fundId) {
         log.info("Deleting mutual fund with ID: {}", fundId);
 

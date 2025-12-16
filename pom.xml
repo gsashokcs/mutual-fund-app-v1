@@ -54,16 +54,6 @@
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>org.ehcache</groupId>
-      <artifactId>ehcache</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>javax.cache</groupId>
-      <artifactId>cache-api</artifactId>
-    </dependency>
-
     <!-- Database -->
     <dependency>
       <groupId>com.h2database</groupId>

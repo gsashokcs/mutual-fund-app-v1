@@ -2,9 +2,6 @@ package com.mutualfund.service;
 
 import java.util.List;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,7 +28,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    @CacheEvict(value = "allUsers", allEntries = true)
     public UserResponse registerUser(UserRegistrationRequest request) {
         log.info("Registering new user: {}", request.getUsername());
 
@@ -54,7 +50,6 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "allUsers", key = "'all'")
     public List<UserResponse> getAllUsers() {
         log.info("Fetching all users");
         return userRepository.findAll().stream().map(this::mapToResponse).toList();
@@ -70,12 +65,12 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "users", key = "#userId")
     public UserResponse getUserById(Long userId) {
         log.info("Fetching user by ID: {}", userId);
         User user =
                 userRepository
-                        .findById(userId)
+                        .findById(
+                                java.util.Objects.requireNonNull(userId, "User ID cannot be null"))
                         .orElseThrow(
                                 () ->
                                         new ResourceNotFoundException(
@@ -85,11 +80,6 @@ public class UserService {
     }
 
     @Transactional
-    @Caching(
-            evict = {
-                @CacheEvict(value = "users", key = "#userId"),
-                @CacheEvict(value = "allUsers", allEntries = true)
-            })
     public void deleteUser(Long userId) {
         log.info("Deleting user with ID: {}", userId);
 

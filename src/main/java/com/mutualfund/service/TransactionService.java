@@ -4,9 +4,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -36,11 +33,6 @@ public class TransactionService {
     private final MutualFundService mutualFundService;
 
     @Transactional
-    @Caching(
-            evict = {
-                @CacheEvict(value = "holdings", key = "#userId"),
-                @CacheEvict(value = "transactions", key = "#userId")
-            })
     public TransactionResponse buyUnits(Long userId, TransactionRequest request) {
         log.info(
                 "Processing buy transaction for user ID: {}, fund ID: {}",
@@ -67,11 +59,6 @@ public class TransactionService {
     }
 
     @Transactional
-    @Caching(
-            evict = {
-                @CacheEvict(value = "holdings", key = "#userId"),
-                @CacheEvict(value = "transactions", key = "#userId")
-            })
     public TransactionResponse redeemUnits(Long userId, TransactionRequest request) {
         log.info(
                 "Processing redeem transaction for user ID: {}, fund ID: {}",
@@ -115,7 +102,6 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "holdings", key = "#userId")
     public List<HoldingResponse> getUserHoldings(Long userId) {
         log.info("Fetching holdings for user ID: {}", userId);
 
@@ -128,7 +114,6 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "transactions", key = "#userId")
     public List<TransactionResponse> getUserTransactions(Long userId) {
         log.info("Fetching transactions for user ID: {}", userId);
 
