@@ -1,6 +1,5 @@
 package com.mutualfund.service;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -40,23 +39,16 @@ public class MutualFundService implements IMutualFundService {
     public MutualFund addMutualFund(MutualFundRequest request) {
         log.info("Adding new mutual fund: {}", request.getName());
 
-        LocalDate today = LocalDate.now();
-
         mutualFundRepository
-                .findByNameAndNavDate(request.getName(), today)
+                .findByName(request.getName())
                 .ifPresent(
                         existing -> {
                             throw new BusinessException(
                                     ErrorCode.DUPLICATE_FUND,
-                                    "Mutual fund already exists for today: " + request.getName());
+                                    "Mutual fund already exists: " + request.getName());
                         });
 
-        MutualFund fund =
-                MutualFund.builder()
-                        .name(request.getName())
-                        .nav(request.getNav())
-                        .navDate(today)
-                        .build();
+        MutualFund fund = MutualFund.builder().name(request.getName()).build();
 
         MutualFund savedFund = mutualFundRepository.save(fund);
         log.info("Mutual fund added successfully with ID: {}", savedFund.getFundId());
@@ -75,8 +67,7 @@ public class MutualFundService implements IMutualFundService {
      */
     @Transactional
     public Nav updateNav(Long fundId, NavUpdateRequest request) {
-        log.info(
-                "Updating NAV for fund ID: {} on date: {}", fundId, request.getNavDate());
+        log.info("Updating NAV for fund ID: {} on date: {}", fundId, request.getNavDate());
 
         // Verify fund exists
         if (!mutualFundRepository.existsById(fundId)) {
@@ -88,11 +79,7 @@ public class MutualFundService implements IMutualFundService {
         Nav nav =
                 navRepository
                         .findByFundIdAndNavDateAndDeletedFalse(fundId, request.getNavDate())
-                        .orElse(
-                                Nav.builder()
-                                        .fundId(fundId)
-                                        .navDate(request.getNavDate())
-                                        .build());
+                        .orElse(Nav.builder().fundId(fundId).navDate(request.getNavDate()).build());
 
         nav.setNav(request.getNav());
         Nav savedNav = navRepository.save(nav);
@@ -122,7 +109,13 @@ public class MutualFundService implements IMutualFundService {
     public Page<MutualFund> getAllMutualFunds(Pageable pageable) {
         log.info(
                 "Fetching mutual funds with pagination: page {}, size {}",
-                pageable.getPageNlatest NAV.
+                pageable.getPageNumber(),
+                pageable.getPageSize());
+        return mutualFundRepository.findAll(pageable);
+    }
+
+    /**
+     * Retrieves a mutual fund by ID with latest NAV.
      *
      * @param fundId the ID of the fund to retrieve
      * @return MutualFund entity with latest NAV information
@@ -130,28 +123,19 @@ public class MutualFundService implements IMutualFundService {
      */
     @Transactional(readOnly = true)
     public MutualFund getCurrentMutualFund(Long fundId) {
-        log.info("Fetching mutual fund by ID: {} with latest NAV", fundId);
+        log.info("Fetching mutual fund by ID: {}", fundId);
 
-        // Get fund details
-        MutualFund fund =
-                mutualFundRepository
-                        .findById(fundId)
-                        .orElseThrow(
-                                () ->
-                                        new ResourceNotFoundException(
-                                                ErrorCode.MUTUAL_FUND_NOT_FOUND,
-                                                "Mutual fund not found with ID: " + fundId));
+        return mutualFundRepository
+                .findById(fundId)
+                .orElseThrow(
+                        () ->
+                                new ResourceNotFoundException(
+                                        ErrorCode.MUTUAL_FUND_NOT_FOUND,
+                                        "Mutual fund not found with ID: " + fundId));
+    }
 
-        // Get latest NAV
-        Nav latestNav =
-                navRepository
-                        .findTopByFundIdAndDeletedFalseOrderByNavDateDesc(fundId)
-                        .orElseThrow(
-                                () ->
-                                        new ResourceNotFoundException(
-                                                ErrorCode.MUTUAL_FUND_NOT_FOUND,
-                                                "No NAV data found for fund ID: " + fundId));
- and soft deletes all associated NAV entries.
+    /**
+     * Deletes a mutual fund from the system and soft deletes all associated NAV entries.
      *
      * @param fundId the ID of the fund to delete
      * @throws ResourceNotFoundException if fund is not found
@@ -172,21 +156,6 @@ public class MutualFundService implements IMutualFundService {
         log.info("Soft deleted {} NAV entries for fund ID: {}", navEntries.size(), fundId);
 
         // Delete the mutual fund
-    /**
-     * Deletes a mutual fund from the system.
-     *
-     * @param fundId the ID of the fund to delete
-     * @throws ResourceNotFoundException if fund is not found
-     */
-    @Transactional
-    public void deleteMutualFund(Long fundId) {
-        log.info("Deleting mutual fund with ID: {}", fundId);
-
-        if (!mutualFundRepository.existsById(fundId)) {
-            throw new ResourceNotFoundException(
-                    ErrorCode.MUTUAL_FUND_NOT_FOUND, "Mutual fund not found with ID: " + fundId);
-        }
-
         mutualFundRepository.deleteById(fundId);
         log.info("Mutual fund deleted successfully: {}", fundId);
     }

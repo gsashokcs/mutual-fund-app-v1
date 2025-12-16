@@ -65,9 +65,11 @@ public class UserService implements IUserService {
      * @throws BusinessException if username already exists
      */
     @Transactional
-    public UserResponse createUser(
-            com.mutualfund.model.request.AdminUserCreationRequest request) {
-        log.info("Admin creating new user: {} with role: {}", request.getUsername(), request.getRole());
+    public UserResponse createUser(com.mutualfund.model.request.AdminUserCreationRequest request) {
+        log.info(
+                "Admin creating new user: {} with role: {}",
+                request.getUsername(),
+                request.getRole());
 
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new BusinessException(

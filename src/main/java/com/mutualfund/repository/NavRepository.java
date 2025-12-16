@@ -10,8 +10,8 @@ import org.springframework.stereotype.Repository;
 import com.mutualfund.model.entity.Nav;
 
 /**
- * Repository interface for Nav entity operations.
- * Provides methods to access and manage NAV history data.
+ * Repository interface for Nav entity operations. Provides methods to access and manage NAV history
+ * data.
  *
  * @author Mutual Fund Management System
  * @version 1.0

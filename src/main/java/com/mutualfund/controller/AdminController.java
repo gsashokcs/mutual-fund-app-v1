@@ -42,15 +42,16 @@ public class AdminController {
     private final UserService userService;
 
     /**
-     * Creates a new mutual fund with current date's NAV.
+     * Creates a new mutual fund. NAV should be added separately using the Update NAV endpoint.
      *
-     * @param request the mutual fund request with name and NAV
+     * @param request the mutual fund request with name
      * @return ResponseEntity with MutualFund and HTTP 201 status
      */
     @PostMapping("/funds")
     @Operation(
             summary = "Add mutual fund",
-            description = "Creates a new mutual fund script with current date's NAV")
+            description =
+                    "Creates a new mutual fund. Use PUT /funds/{fundId}/nav to add NAV values.")
     public ResponseEntity<MutualFund> addMutualFund(@Valid @RequestBody MutualFundRequest request) {
         MutualFund fund = mutualFundService.addMutualFund(request);
         return new ResponseEntity<>(fund, HttpStatus.CREATED);
@@ -66,8 +67,7 @@ public class AdminController {
     @PutMapping("/funds/{fundId}/nav")
     @Operation(
             summary = "Update NAV",
-            description =
-                    "Updates or creates Net Asset Value for a mutual fund on a specific date")
+            description = "Updates or creates Net Asset Value for a mutual fund on a specific date")
     public ResponseEntity<Nav> updateNav(
             @PathVariable @Positive(message = "Fund ID must be positive") Long fundId,
             @Valid @RequestBody NavUpdateRequest request) {

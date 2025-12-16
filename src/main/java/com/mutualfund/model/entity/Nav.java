@@ -13,8 +13,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Entity representing the Net Asset Value (NAV) for a mutual fund on a specific date.
- * Tracks historical NAV values for each fund with soft delete support.
+ * Entity representing the Net Asset Value (NAV) for a mutual fund on a specific date. Tracks
+ * historical NAV values for each fund with soft delete support.
  *
  * @author Mutual Fund Management System
  * @version 1.0

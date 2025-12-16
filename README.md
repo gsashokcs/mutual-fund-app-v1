@@ -484,7 +484,7 @@ Import the Postman collection for easy API testing:
 - `GET /api/v1/users/{userId}/transactions` - View transaction history
 
 #### Admin Operations (ADMIN role required)
-- `POST /api/v1/admin/funds` - Add new mutual fund
+- `POST /api/v1/admin/funds` - Add new mutual fund (without NAV)
 - `PUT /api/v1/admin/funds/{fundId}/nav` - Update or create fund NAV for specific date
 - `GET /api/v1/admin/funds` - List all funds with pagination
 - `DELETE /api/v1/admin/funds/{fundId}` - Delete fund
@@ -829,7 +829,7 @@ Admins can access any user's transaction data through the security bypass.
 | `POST /api/v1/users/{userId}/redeem` | Authenticated + Ownership | Redeem own units |
 | `GET /api/v1/users/{userId}/holdings` | Authenticated + Ownership | View own holdings |
 | `GET /api/v1/users/{userId}/transactions` | Authenticated + Ownership | View own transactions |
-| `POST /api/v1/admin/funds` | ADMIN only | Add mutual fund |
+| `POST /api/v1/admin/funds` | ADMIN only | Add mutual fund (NAV managed separately) |
 | `PUT /api/v1/admin/funds/{id}/nav` | ADMIN only | Update/create NAV for specific date |
 | `GET /api/v1/admin/funds` | ADMIN only | List all funds |
 | `DELETE /api/v1/admin/funds/{id}` | ADMIN only | Delete fund |

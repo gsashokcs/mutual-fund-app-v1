@@ -35,7 +35,7 @@ public class DataInitializer implements CommandLineRunner {
     private final NavRepository navRepository;
 
     /**
-     * and loads mutual funds if not already present.
+     * Initializes the database with admin user and mutual funds if not already present.
      *
      * @param args command line arguments passed to the application
      * @throws Exception if initialization fails
@@ -43,8 +43,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         initializeAdminUser();
-        initializeMutualFunds.. args) throws Exception {
-        initializeAdminUser();
+        initializeMutualFunds();
     }
 
     /**
@@ -65,7 +64,9 @@ public class DataInitializer implements CommandLineRunner {
             userRepository.save(admin);
             log.info("Admin user created successfully with username: {}", adminUsername);
         } else {
-     
+            log.info("Admin user already exists, skipping initialization");
+        }
+    }
 
     /**
      * Loads popular Indian mutual funds with NAV data from yesterday. Only creates funds if the
@@ -80,7 +81,8 @@ public class DataInitializer implements CommandLineRunner {
         LocalDate yesterday = LocalDate.now().minusDays(1);
         log.info("Initializing mutual funds with NAV date: {}", yesterday);
 
-        // Popular IndiaWithNav("SBI Bluechip Fund", new BigDecimal("72.45"), yesterday);
+        // Popular Indian mutual funds with realistic NAV values
+        createMutualFundWithNav("SBI Bluechip Fund", new BigDecimal("72.45"), yesterday);
         createMutualFundWithNav(
                 "HDFC Balanced Advantage Fund", new BigDecimal("368.92"), yesterday);
         createMutualFundWithNav(
@@ -95,9 +97,11 @@ public class DataInitializer implements CommandLineRunner {
         createMutualFundWithNav(
                 "HDFC Mid-Cap Opportunities Fund", new BigDecimal("178.45"), yesterday);
         createMutualFundWithNav("Axis Midcap Fund", new BigDecimal("92.34"), yesterday);
-        createMutualFundWithNav("DSP Equity Opportunities Fund", new BigDecimal("321.78"), yesterday);
+        createMutualFundWithNav(
+                "DSP Equity Opportunities Fund", new BigDecimal("321.78"), yesterday);
         createMutualFundWithNav("Tata Digital India Fund", new BigDecimal("45.67"), yesterday);
-        createMutualFundWithNav("Motilal Oswal Nasdaq 100 Fund", new BigDecimal("67.89"), yesterday);
+        createMutualFundWithNav(
+                "Motilal Oswal Nasdaq 100 Fund", new BigDecimal("67.89"), yesterday);
 
         log.info("Successfully initialized 15 mutual funds with NAV history");
     }
@@ -111,8 +115,7 @@ public class DataInitializer implements CommandLineRunner {
      */
     private void createMutualFundWithNav(String name, BigDecimal navValue, LocalDate navDate) {
         // Create mutual fund
-        MutualFund fund =
-                MutualFund.builder().name(name).nav(navValue).navDate(navDate).build();
+        MutualFund fund = MutualFund.builder().name(name).build();
         MutualFund savedFund = mutualFundRepository.save(fund);
 
         // Create NAV history entry
@@ -125,9 +128,6 @@ public class DataInitializer implements CommandLineRunner {
                         .build();
         navRepository.save(nav);
 
-        log.debug("Created mutual fund: {} with NAV: {} on {}", name, navValue, navDate
-        log.debug("Created mutual fund: {} with NAV: {}", name, nav);
-    }       log.info("Admin user already exists, skipping initialization");
-        }
+        log.debug("Created mutual fund: {} with NAV: {} on {}", name, navValue, navDate);
     }
 }
