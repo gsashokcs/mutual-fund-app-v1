@@ -1,0 +1,180 @@
+package com.mutualfund.service;
+
+import com.mutualfund.model.response.HoldingResponse;
+import com.mutualfund.model.request.TransactionRequest;
+import com.mutualfund.model.response.TransactionResponse;
+import com.mutualfund.exception.BusinessException;
+import com.mutualfund.model.entity.Holding;
+import com.mutualfund.model.entity.Transaction;
+import com.mutualfund.repository.HoldingRepository;
+import com.mutualfund.repository.TransactionRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class TransactionService {
+
+    private final TransactionRepository transactionRepository;
+    private final HoldingRepository holdingRepository;
+    private final MutualFundService mutualFundService;
+
+    @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "holdings", key = "#userId"),
+        @CacheEvict(value = "transactions", key = "#userId")
+    })
+    public TransactionResponse buyUnits(Long userId, TransactionRequest request) {
+        MDC.put("userId", String.valueOf(userId));
+        MDC.put("fundId", String.valueOf(request.getFundId()));
+        log.info("Processing buy transaction for user ID: {}, fund ID: {}", userId, request.getFundId());
+
+        var fund = mutualFundService.getCurrentMutualFund(request.getFundId());
+
+        var transaction = Transaction.builder()
+                .userId(userId)
+                .fundId(request.getFundId())
+                .units(request.getUnits())
+                .nav(fund.getNav())
+                .type(Transaction.TransactionType.BUY)
+                .build();
+
+        var savedTransaction = transactionRepository.save(transaction);
+
+        updateHolding(userId, request.getFundId(), request.getUnits(), fund.getNav(), true);
+
+        log.info("Buy transaction completed successfully: {}", savedTransaction.getTransactionId());
+        return mapToTransactionResponse(savedTransaction, fund.getName());
+    }
+
+    @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "holdings", key = "#userId"),
+        @CacheEvict(value = "transactions", key = "#userId")
+    })
+    public TransactionResponse redeemUnits(Long userId, TransactionRequest request) {
+        MDC.put("userId", String.valueOf(userId));
+        MDC.put("fundId", String.valueOf(request.getFundId()));
+        log.info("Processing redeem transaction for user ID: {}, fund ID: {}", userId, request.getFundId());
+
+        var fund = mutualFundService.getCurrentMutualFund(request.getFundId());
+
+        var holding = holdingRepository.findByUserIdAndFundId(userId, request.getFundId())
+                .orElseThrow(() -> new BusinessException("No holdings found for this fund"));
+
+        if (holding.getUnits().compareTo(request.getUnits()) < 0) {
+            throw new BusinessException("Insufficient units. Available: " + holding.getUnits());
+        }
+
+        var transaction = Transaction.builder()
+                .userId(userId)
+                .fundId(request.getFundId())
+                .units(request.getUnits())
+                .nav(fund.getNav())
+                .type(Transaction.TransactionType.REDEEM)
+                .build();
+
+        var savedTransaction = transactionRepository.save(transaction);
+
+        updateHolding(userId, request.getFundId(), request.getUnits(), fund.getNav(), false);
+
+        log.info("Redeem transaction completed successfully: {}", savedTransaction.getTransactionId());
+        return mapToTransactionResponse(savedTransaction, fund.getName());
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = "holdings", key = "#userId")
+    public List<HoldingResponse> getUserHoldings(Long userId) {
+        MDC.put("userId", String.valueOf(userId));
+        log.info("Fetching holdings for user ID: {}", userId);
+        
+        var holdings = holdingRepository.findByUserId(userId);
+        
+        return holdings.stream()
+                .filter(holding -> holding.getUnits().compareTo(BigDecimal.ZERO) > 0)
+                .map(this::mapToHoldingResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = "transactions", key = "#userId")
+    public List<TransactionResponse> getUserTransactions(Long userId) {
+        MDC.put("userId", String.valueOf(userId));
+        log.info("Fetching transactions for user ID: {}", userId);
+        
+        var transactions = transactionRepository.findByUserId(userId);
+        
+        return transactions.stream()
+                .map(t -> mapToTransactionResponse(t, ""))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TransactionResponse> getUserTransactions(Long userId, Pageable pageable) {
+        MDC.put("userId", String.valueOf(userId));
+        log.info("Fetching transactions for user ID: {} with pagination: page {}, size {}", 
+                userId, pageable.getPageNumber(), pageable.getPageSize());
+        
+        return transactionRepository.findByUserId(userId, pageable)
+                .map(t -> mapToTransactionResponse(t, ""));
+    }
+
+    private void updateHolding(Long userId, Long fundId, BigDecimal units, BigDecimal nav, boolean isBuy) {
+        var holding = holdingRepository.findByUserIdAndFundId(userId, fundId)
+                .orElseGet(() -> Holding.builder()
+                        .userId(userId)
+                        .fundId(fundId)
+                        .units(BigDecimal.ZERO)
+                        .totalValue(BigDecimal.ZERO)
+                        .build());
+
+        BigDecimal transactionValue = units.multiply(nav);
+        BigDecimal unitsChange = isBuy ? units : units.negate();
+        BigDecimal valueChange = isBuy ? transactionValue : transactionValue.negate();
+        
+        holding.setUnits(holding.getUnits().add(unitsChange));
+        holding.setTotalValue(holding.getTotalValue().add(valueChange));
+
+        holdingRepository.save(holding);
+    }
+
+    private TransactionResponse mapToTransactionResponse(Transaction transaction, String fundName) {
+        return TransactionResponse.builder()
+                .transactionId(transaction.getTransactionId())
+                .userId(transaction.getUserId())
+                .fundId(transaction.getFundId())
+                .fundName(fundName)
+                .units(transaction.getUnits())
+                .nav(transaction.getNav())
+                .type(transaction.getType().name())
+                .transactionDate(transaction.getTransactionDate())
+                .build();
+    }
+
+    private HoldingResponse mapToHoldingResponse(Holding holding) {
+        var currentFund = mutualFundService.getCurrentMutualFund(holding.getFundId());
+        var currentValue = holding.getUnits().multiply(currentFund.getNav())
+                .setScale(2, RoundingMode.HALF_UP);
+        
+        return HoldingResponse.builder()
+                .fundId(holding.getFundId())
+                .fundName(currentFund.getName())
+                .units(holding.getUnits())
+                .currentNav(currentFund.getNav())
+                .totalValue(currentValue)
+                .build();
+    }
+}
