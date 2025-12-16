@@ -82,6 +82,7 @@ public class UserService {
                         .orElseThrow(
                                 () ->
                                         new ResourceNotFoundException(
+                                                ErrorCode.USER_NOT_FOUND,
                                                 "User not found with ID: " + userId));
         return mapToResponse(user);
     }
@@ -97,7 +98,8 @@ public class UserService {
         log.info("Deleting user with ID: {}", userId);
 
         if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException("User not found with ID: " + userId);
+            throw new ResourceNotFoundException(
+                    ErrorCode.USER_NOT_FOUND, "User not found with ID: " + userId);
         }
 
         userRepository.deleteById(userId);
@@ -108,7 +110,10 @@ public class UserService {
     public User findByUsername(String username) {
         return userRepository
                 .findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+                .orElseThrow(
+                        () ->
+                                new ResourceNotFoundException(
+                                        ErrorCode.USER_NOT_FOUND, "User not found: " + username));
     }
 
     private UserResponse mapToResponse(User user) {

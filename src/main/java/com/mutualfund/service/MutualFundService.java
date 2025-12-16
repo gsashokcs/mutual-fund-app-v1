@@ -78,6 +78,7 @@ public class MutualFundService {
                         .orElseThrow(
                                 () ->
                                         new ResourceNotFoundException(
+                                                ErrorCode.MUTUAL_FUND_NOT_FOUND,
                                                 "Mutual fund not found with ID: "
                                                         + fundId
                                                         + " for current date"));
@@ -117,6 +118,7 @@ public class MutualFundService {
                 .orElseThrow(
                         () ->
                                 new ResourceNotFoundException(
+                                        ErrorCode.MUTUAL_FUND_NOT_FOUND,
                                         "Mutual fund not found with ID: "
                                                 + fundId
                                                 + " for current date"));
@@ -134,7 +136,8 @@ public class MutualFundService {
         log.info("Deleting mutual fund with ID: {}", fundId);
 
         if (!mutualFundRepository.existsById(fundId)) {
-            throw new ResourceNotFoundException("Mutual fund not found with ID: " + fundId);
+            throw new ResourceNotFoundException(
+                    ErrorCode.MUTUAL_FUND_NOT_FOUND, "Mutual fund not found with ID: " + fundId);
         }
 
         mutualFundRepository.deleteById(fundId);
