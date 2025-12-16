@@ -1,5 +1,8 @@
 package com.mutualfund.exception;
 
+import java.time.LocalDateTime;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,127 +13,135 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
-import java.time.LocalDateTime;
-import java.util.stream.Collectors;
-
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @Autowired private ErrorMessageService errorMessageService;
 
-                        @Autowired
-    private ErrorMessageService errorMessageService;
-
-    @ExceptionHandler (ResourceNotFoundException.class)
-    public               ResponseEntity<ErrorResponse> handleResourceNotFoundException(
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
             ResourceNotFoundException ex, WebRequest request) {
-        
+
         String errorCode = determineErrorCode(ex.getMessage());
-        ErrorMessageService.ErrorMessageDetail errorDetail = errorMessageService.getErrorMessage(errorCode);
-        
-        ErrorResponse error = ErrorResponse.builder()
-                .userMessage(errorDetail.getUserMessage())
-                .devMessage(errorDetail.getDevMessage() + " - " + ex.getMessage())
-                .errorCode(errorCode)
-                .timestamp(LocalDateTime.now())
-                .path(request.getDescription(false).replace("uri=", ""))
-                .build();
+        ErrorMessageService.ErrorMessageDetail errorDetail =
+                errorMessageService.getErrorMessage(errorCode);
+
+        ErrorResponse error =
+                ErrorResponse.builder()
+                        .userMessage(errorDetail.getUserMessage())
+                        .devMessage(errorDetail.getDevMessage() + " - " + ex.getMessage())
+                        .errorCode(errorCode)
+                        .timestamp(LocalDateTime.now())
+                        .path(request.getDescription(false).replace("uri=", ""))
+                        .build();
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(
             BusinessException ex, WebRequest request) {
-        
+
         String errorCode = determineErrorCode(ex.getMessage());
-        ErrorMessageService.ErrorMessageDetail errorDetail = errorMessageService.getErrorMessage(errorCode);
-        
-        ErrorResponse error = ErrorResponse.builder()
-                .userMessage(errorDetail.getUserMessage())
-                .devMessage(errorDetail.getDevMessage() + " - " + ex.getMessage())
-                .errorCode(errorCode)
-                .timestamp(LocalDateTime.now())
-                .path(request.getDescription(false).replace("uri=", ""))
-                .build();
+        ErrorMessageService.ErrorMessageDetail errorDetail =
+                errorMessageService.getErrorMessage(errorCode);
+
+        ErrorResponse error =
+                ErrorResponse.builder()
+                        .userMessage(errorDetail.getUserMessage())
+                        .devMessage(errorDetail.getDevMessage() + " - " + ex.getMessage())
+                        .errorCode(errorCode)
+                        .timestamp(LocalDateTime.now())
+                        .path(request.getDescription(false).replace("uri=", ""))
+                        .build();
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex, WebRequest request) {
-        
-        String message = ex.getBindingResult().getFieldErrors().stream()
-                .map(FieldError::getDefaultMessage)
-                .collect(Collectors.joining(", "));
-        
-        ErrorMessageService.ErrorMessageDetail errorDetail = errorMessageService.getErrorMessage("VALIDATION_ERROR");
-        
-        ErrorResponse error = ErrorResponse.builder()
-                .userMessage(errorDetail.getUserMessage())
-                .devMessage(errorDetail.getDevMessage() + " - " + message)
-                .errorCode("VALIDATION_ERROR")
-                .timestamp(LocalDateTime.now())
-                .path(request.getDescription(false).replace("uri=", ""))
-                .build();
+
+        String message =
+                ex.getBindingResult().getFieldErrors().stream()
+                        .map(FieldError::getDefaultMessage)
+                        .collect(Collectors.joining(", "));
+
+        ErrorMessageService.ErrorMessageDetail errorDetail =
+                errorMessageService.getErrorMessage("VALIDATION_ERROR");
+
+        ErrorResponse error =
+                ErrorResponse.builder()
+                        .userMessage(errorDetail.getUserMessage())
+                        .devMessage(errorDetail.getDevMessage() + " - " + message)
+                        .errorCode("VALIDATION_ERROR")
+                        .timestamp(LocalDateTime.now())
+                        .path(request.getDescription(false).replace("uri=", ""))
+                        .build();
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleConstraintViolationException(
             jakarta.validation.ConstraintViolationException ex, WebRequest request) {
-        
-        String message = ex.getConstraintViolations().stream()
-                .map(violation -> violation.getMessage())
-                .collect(Collectors.joining(", "));
-        
-        ErrorMessageService.ErrorMessageDetail errorDetail = errorMessageService.getErrorMessage("VALIDATION_ERROR");
-        
-        ErrorResponse error = ErrorResponse.builder()
-                .userMessage(errorDetail.getUserMessage())
-                .devMessage(errorDetail.getDevMessage() + " - " + message)
-                .errorCode("VALIDATION_ERROR")
-                .timestamp(LocalDateTime.now())
-                .path(request.getDescription(false).replace("uri=", ""))
-                .build();
+
+        String message =
+                ex.getConstraintViolations().stream()
+                        .map(violation -> violation.getMessage())
+                        .collect(Collectors.joining(", "));
+
+        ErrorMessageService.ErrorMessageDetail errorDetail =
+                errorMessageService.getErrorMessage("VALIDATION_ERROR");
+
+        ErrorResponse error =
+                ErrorResponse.builder()
+                        .userMessage(errorDetail.getUserMessage())
+                        .devMessage(errorDetail.getDevMessage() + " - " + message)
+                        .errorCode("VALIDATION_ERROR")
+                        .timestamp(LocalDateTime.now())
+                        .path(request.getDescription(false).replace("uri=", ""))
+                        .build();
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(
             AccessDeniedException ex, WebRequest request) {
-        
-        ErrorMessageService.ErrorMessageDetail errorDetail = errorMessageService.getErrorMessage("ACCESS_DENIED");
-        
-        ErrorResponse error = ErrorResponse.builder()
-                .userMessage(errorDetail.getUserMessage())
-                .devMessage(errorDetail.getDevMessage())
-                .errorCode("ACCESS_DENIED")
-                .timestamp(LocalDateTime.now())
-                .path(request.getDescription(false).replace("uri=", ""))
-                .build();
+
+        ErrorMessageService.ErrorMessageDetail errorDetail =
+                errorMessageService.getErrorMessage("ACCESS_DENIED");
+
+        ErrorResponse error =
+                ErrorResponse.builder()
+                        .userMessage(errorDetail.getUserMessage())
+                        .devMessage(errorDetail.getDevMessage())
+                        .errorCode("ACCESS_DENIED")
+                        .timestamp(LocalDateTime.now())
+                        .path(request.getDescription(false).replace("uri=", ""))
+                        .build();
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGlobalException(
-            Exception ex, WebRequest request) {
-        
-        ErrorMessageService.ErrorMessageDetail errorDetail = errorMessageService.getErrorMessage("INTERNAL_SERVER_ERROR");
-        
-        ErrorResponse error = ErrorResponse.builder()
-                .userMessage(errorDetail.getUserMessage())
-                .devMessage(errorDetail.getDevMessage() + " - " + ex.getMessage())
-                .errorCode("INTERNAL_SERVER_ERROR")
-                .timestamp(LocalDateTime.now())
-                .path(request.getDescription(false).replace("uri=", ""))
-                .build();
+    public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, WebRequest request) {
+
+        ErrorMessageService.ErrorMessageDetail errorDetail =
+                errorMessageService.getErrorMessage("INTERNAL_SERVER_ERROR");
+
+        ErrorResponse error =
+                ErrorResponse.builder()
+                        .userMessage(errorDetail.getUserMessage())
+                        .devMessage(errorDetail.getDevMessage() + " - " + ex.getMessage())
+                        .errorCode("INTERNAL_SERVER_ERROR")
+                        .timestamp(LocalDateTime.now())
+                        .path(request.getDescription(false).replace("uri=", ""))
+                        .build();
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private String determineErrorCode(String message) {
         if (message == null) return "RESOURCE_NOT_FOUND";
-        
+
         String lowerMessage = message.toLowerCase();
-        
+
         if (lowerMessage.contains("insufficient balance")) {
             return "INSUFFICIENT_BALANCE";
         } else if (lowerMessage.contains("insufficient units")) {

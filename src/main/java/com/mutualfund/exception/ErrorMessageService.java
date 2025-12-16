@@ -1,14 +1,16 @@
 package com.mutualfund.exception;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Service;
-
-import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import jakarta.annotation.PostConstruct;
+
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class ErrorMessageService {
@@ -20,21 +22,19 @@ public class ErrorMessageService {
     public void loadErrorMessages() {
         try {
             ClassPathResource resource = new ClassPathResource("error-messages.json");
-            errorMessages = objectMapper.readValue(
-                    resource.getInputStream(),
-                    new TypeReference<Map<String, ErrorMessageDetail>>() {}
-            );
+            errorMessages =
+                    objectMapper.readValue(
+                            resource.getInputStream(),
+                            new TypeReference<Map<String, ErrorMessageDetail>>() {});
         } catch (IOException e) {
             throw new RuntimeException("Failed to load error messages from JSON file", e);
         }
     }
 
     public ErrorMessageDetail getErrorMessage(String errorCode) {
-        return errorMessages.getOrDefault(errorCode, 
-                new ErrorMessageDetail(
-                        "An error occurred.",
-                        "Error code: " + errorCode
-                ));
+        return errorMessages.getOrDefault(
+                errorCode,
+                new ErrorMessageDetail("An error occurred.", "Error code: " + errorCode));
     }
 
     public static class ErrorMessageDetail {

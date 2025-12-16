@@ -1,11 +1,14 @@
 package com.mutualfund.service;
 
-import com.mutualfund.model.request.UserRegistrationRequest;
-import com.mutualfund.model.response.UserResponse;
-import com.mutualfund.exception.BusinessException;
-import com.mutualfund.exception.ResourceNotFoundException;
-import com.mutualfund.model.entity.User;
-import com.mutualfund.repository.UserRepository;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,26 +17,21 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import com.mutualfund.exception.BusinessException;
+import com.mutualfund.exception.ResourceNotFoundException;
+import com.mutualfund.model.entity.User;
+import com.mutualfund.model.request.UserRegistrationRequest;
+import com.mutualfund.model.response.UserResponse;
+import com.mutualfund.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
-    @Mock
-    private UserRepository userRepository;
+    @Mock private UserRepository userRepository;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
+    @Mock private PasswordEncoder passwordEncoder;
 
-    @InjectMocks
-    private UserService userService;
+    @InjectMocks private UserService userService;
 
     private User testUser;
     private UserRegistrationRequest registrationRequest;
@@ -134,6 +132,7 @@ class UserServiceTest {
     void findByUsername_NotFound_ThrowsException() {
         when(userRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> userService.findByUsername("nonexistent"));
+        assertThrows(
+                ResourceNotFoundException.class, () -> userService.findByUsername("nonexistent"));
     }
 }

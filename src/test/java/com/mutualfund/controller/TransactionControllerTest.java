@@ -1,26 +1,5 @@
 package com.mutualfund.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mutualfund.model.response.HoldingResponse;
-import com.mutualfund.model.request.TransactionRequest;
-import com.mutualfund.model.response.TransactionResponse;
-import com.mutualfund.service.TransactionService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
@@ -28,19 +7,38 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mutualfund.model.request.TransactionRequest;
+import com.mutualfund.model.response.HoldingResponse;
+import com.mutualfund.model.response.TransactionResponse;
+import com.mutualfund.service.TransactionService;
+
 @WebMvcTest(TransactionController.class)
 @Import(TestSecurityConfig.class)
 @Disabled("Controller tests disabled")
 class TransactionControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private ObjectMapper objectMapper;
 
-    @MockitoBean
-    private TransactionService transactionService;
+    @MockitoBean private TransactionService transactionService;
 
     private TransactionRequest transactionRequest;
     private TransactionResponse transactionResponse;
@@ -76,10 +74,11 @@ class TransactionControllerTest {
         when(transactionService.buyUnits(anyLong(), any(TransactionRequest.class)))
                 .thenReturn(transactionResponse);
 
-        mockMvc.perform(post("/api/v1/users/1/buy")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(transactionRequest)))
+        mockMvc.perform(
+                        post("/api/v1/users/1/buy")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(transactionRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.transactionId").value(1))
                 .andExpect(jsonPath("$.type").value("BUY"));
@@ -92,10 +91,11 @@ class TransactionControllerTest {
         when(transactionService.redeemUnits(anyLong(), any(TransactionRequest.class)))
                 .thenReturn(transactionResponse);
 
-        mockMvc.perform(post("/api/v1/users/1/redeem")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(transactionRequest)))
+        mockMvc.perform(
+                        post("/api/v1/users/1/redeem")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(transactionRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.transactionId").value(1))
                 .andExpect(jsonPath("$.type").value("REDEEM"));
@@ -128,10 +128,11 @@ class TransactionControllerTest {
 
     @Test
     void buyUnits_Unauthorized() throws Exception {
-        mockMvc.perform(post("/api/v1/users/1/buy")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(transactionRequest)))
+        mockMvc.perform(
+                        post("/api/v1/users/1/buy")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(transactionRequest)))
                 .andExpect(status().isUnauthorized());
     }
 }

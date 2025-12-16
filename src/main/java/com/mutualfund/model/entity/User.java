@@ -3,6 +3,7 @@ package com.mutualfund.model.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,8 +32,8 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-        @Builder.Default
-private Role role = Role.USER;
+    @Builder.Default
+    private Role role = Role.USER;
 
     public enum Role {
         USER,

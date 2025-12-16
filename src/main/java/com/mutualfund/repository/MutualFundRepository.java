@@ -1,11 +1,12 @@
 package com.mutualfund.repository;
 
-import com.mutualfund.model.entity.MutualFund;
+import java.time.LocalDate;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
-import java.util.Optional;
+import com.mutualfund.model.entity.MutualFund;
 
 @Repository
 public interface MutualFundRepository extends JpaRepository<MutualFund, Long> {

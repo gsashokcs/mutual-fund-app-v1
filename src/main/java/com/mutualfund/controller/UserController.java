@@ -1,18 +1,21 @@
 package com.mutualfund.controller;
 
-import com.mutualfund.model.request.UserRegistrationRequest;
-import com.mutualfund.model.response.UserResponse;
-import com.mutualfund.service.UserService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import com.mutualfund.model.request.UserRegistrationRequest;
+import com.mutualfund.model.response.UserResponse;
+import com.mutualfund.service.UserService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -24,15 +27,20 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    @Operation(summary = "Register a new user", description = "Creates a new user account with USER role")
-    public ResponseEntity<UserResponse> registerUser(@Valid @RequestBody UserRegistrationRequest request) {
+    @Operation(
+            summary = "Register a new user",
+            description = "Creates a new user account with USER role")
+    public ResponseEntity<UserResponse> registerUser(
+            @Valid @RequestBody UserRegistrationRequest request) {
         UserResponse response = userService.registerUser(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping("/{userId}")
     @SecurityRequirement(name = "basicAuth")
-    @Operation(summary = "Get user profile", description = "Retrieves user profile information by user ID")
+    @Operation(
+            summary = "Get user profile",
+            description = "Retrieves user profile information by user ID")
     public ResponseEntity<UserResponse> getUserProfile(
             @PathVariable @Positive(message = "User ID must be positive") Long userId) {
         UserResponse response = userService.getUserById(userId);

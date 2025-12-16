@@ -1,18 +1,20 @@
 package com.mutualfund.model.entity;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 @Entity
-@Table(name = "holdings",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "fund_id"}))
+@Table(
+        name = "holdings",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "fund_id"}))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

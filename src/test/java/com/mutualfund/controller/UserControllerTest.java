@@ -1,39 +1,37 @@
 package com.mutualfund.controller;
 
-import com.mutualfund.model.request.UserRegistrationRequest;
-import com.mutualfund.model.response.UserResponse;
-import com.mutualfund.service.UserService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mutualfund.model.request.UserRegistrationRequest;
+import com.mutualfund.model.response.UserResponse;
+import com.mutualfund.service.UserService;
+
 @WebMvcTest(UserController.class)
 @Import(TestSecurityConfig.class)
 @Disabled("Controller tests disabled")
 class UserControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Autowired private MockMvc mockMvc;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private ObjectMapper objectMapper;
 
-    @MockitoBean
-    private UserService userService;
+    @MockitoBean private UserService userService;
 
     private UserRegistrationRequest registrationRequest;
     private UserResponse userResponse;
@@ -48,10 +46,11 @@ class UserControllerTest {
     void registerUser_Success() throws Exception {
         when(userService.registerUser(any(UserRegistrationRequest.class))).thenReturn(userResponse);
 
-        mockMvc.perform(post("/api/v1/users/register")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(registrationRequest)))
+        mockMvc.perform(
+                        post("/api/v1/users/register")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(registrationRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.username").value("testuser"));
@@ -61,10 +60,11 @@ class UserControllerTest {
     void registerUser_InvalidRequest_BadRequest() throws Exception {
         UserRegistrationRequest invalidRequest = new UserRegistrationRequest("ab", "123");
 
-        mockMvc.perform(post("/api/v1/users/register")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidRequest)))
+        mockMvc.perform(
+                        post("/api/v1/users/register")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -81,7 +81,6 @@ class UserControllerTest {
 
     @Test
     void getUserProfile_Unauthorized() throws Exception {
-        mockMvc.perform(get("/api/v1/users/1"))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/users/1")).andExpect(status().isUnauthorized());
     }
 }

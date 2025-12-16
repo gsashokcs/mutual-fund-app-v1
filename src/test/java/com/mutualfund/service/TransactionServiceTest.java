@@ -1,13 +1,13 @@
 package com.mutualfund.service;
 
-import com.mutualfund.model.request.TransactionRequest;
-import com.mutualfund.model.response.TransactionResponse;
-import com.mutualfund.exception.BusinessException;
-import com.mutualfund.model.entity.Holding;
-import com.mutualfund.model.entity.MutualFund;
-import com.mutualfund.model.entity.Transaction;
-import com.mutualfund.repository.HoldingRepository;
-import com.mutualfund.repository.TransactionRepository;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,28 +15,25 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import com.mutualfund.exception.BusinessException;
+import com.mutualfund.model.entity.Holding;
+import com.mutualfund.model.entity.MutualFund;
+import com.mutualfund.model.entity.Transaction;
+import com.mutualfund.model.request.TransactionRequest;
+import com.mutualfund.model.response.TransactionResponse;
+import com.mutualfund.repository.HoldingRepository;
+import com.mutualfund.repository.TransactionRepository;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceTest {
 
-    @Mock
-    private TransactionRepository transactionRepository;
+    @Mock private TransactionRepository transactionRepository;
 
-    @Mock
-    private HoldingRepository holdingRepository;
+    @Mock private HoldingRepository holdingRepository;
 
-    @Mock
-    private MutualFundService mutualFundService;
+    @Mock private MutualFundService mutualFundService;
 
-    @InjectMocks
-    private TransactionService transactionService;
+    @InjectMocks private TransactionService transactionService;
 
     private MutualFund testFund;
     private Holding testHolding;
@@ -69,7 +66,7 @@ class TransactionServiceTest {
     @Test
     void buyUnits_Success() {
         TransactionRequest request = new TransactionRequest(1L, new BigDecimal("5.0000"));
-        
+
         when(mutualFundService.getCurrentMutualFund(1L)).thenReturn(testFund);
         when(transactionRepository.save(any(Transaction.class))).thenReturn(testTransaction);
         when(holdingRepository.findByUserIdAndFundId(1L, 1L)).thenReturn(Optional.empty());
@@ -87,7 +84,7 @@ class TransactionServiceTest {
     @Test
     void redeemUnits_Success() {
         TransactionRequest request = new TransactionRequest(1L, new BigDecimal("3.0000"));
-        
+
         when(mutualFundService.getCurrentMutualFund(1L)).thenReturn(testFund);
         when(holdingRepository.findByUserIdAndFundId(1L, 1L)).thenReturn(Optional.of(testHolding));
         when(transactionRepository.save(any(Transaction.class))).thenReturn(testTransaction);
@@ -103,7 +100,7 @@ class TransactionServiceTest {
     @Test
     void redeemUnits_NoHoldings_ThrowsException() {
         TransactionRequest request = new TransactionRequest(1L, new BigDecimal("3.0000"));
-        
+
         when(mutualFundService.getCurrentMutualFund(1L)).thenReturn(testFund);
         when(holdingRepository.findByUserIdAndFundId(1L, 1L)).thenReturn(Optional.empty());
 
@@ -114,7 +111,7 @@ class TransactionServiceTest {
     @Test
     void redeemUnits_InsufficientUnits_ThrowsException() {
         TransactionRequest request = new TransactionRequest(1L, new BigDecimal("15.0000"));
-        
+
         when(mutualFundService.getCurrentMutualFund(1L)).thenReturn(testFund);
         when(holdingRepository.findByUserIdAndFundId(1L, 1L)).thenReturn(Optional.of(testHolding));
 

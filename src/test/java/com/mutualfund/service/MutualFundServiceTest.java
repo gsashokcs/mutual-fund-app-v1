@@ -1,17 +1,8 @@
 package com.mutualfund.service;
 
-import com.mutualfund.model.request.MutualFundRequest;
-import com.mutualfund.model.request.NavUpdateRequest;
-import com.mutualfund.exception.BusinessException;
-import com.mutualfund.exception.ResourceNotFoundException;
-import com.mutualfund.model.entity.MutualFund;
-import com.mutualfund.repository.MutualFundRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -19,18 +10,26 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.mutualfund.exception.BusinessException;
+import com.mutualfund.exception.ResourceNotFoundException;
+import com.mutualfund.model.entity.MutualFund;
+import com.mutualfund.model.request.MutualFundRequest;
+import com.mutualfund.model.request.NavUpdateRequest;
+import com.mutualfund.repository.MutualFundRepository;
 
 @ExtendWith(MockitoExtension.class)
 class MutualFundServiceTest {
 
-    @Mock
-    private MutualFundRepository mutualFundRepository;
+    @Mock private MutualFundRepository mutualFundRepository;
 
-    @InjectMocks
-    private MutualFundService mutualFundService;
+    @InjectMocks private MutualFundService mutualFundService;
 
     private MutualFund testFund;
     private MutualFundRequest fundRequest;
@@ -89,7 +88,8 @@ class MutualFundServiceTest {
         when(mutualFundRepository.findByFundIdAndNavDate(1L, LocalDate.now()))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> mutualFundService.updateNav(1L, navRequest));
+        assertThrows(
+                ResourceNotFoundException.class, () -> mutualFundService.updateNav(1L, navRequest));
     }
 
     @Test
@@ -120,7 +120,8 @@ class MutualFundServiceTest {
         when(mutualFundRepository.findByFundIdAndNavDate(1L, LocalDate.now()))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> mutualFundService.getCurrentMutualFund(1L));
+        assertThrows(
+                ResourceNotFoundException.class, () -> mutualFundService.getCurrentMutualFund(1L));
     }
 
     @Test
