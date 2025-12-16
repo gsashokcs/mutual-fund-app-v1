@@ -23,10 +23,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
             ResourceNotFoundException ex, WebRequest request) {
         
-        var errorCode = determineErrorCode(ex.getMessage());
-        var errorDetail = errorMessageService.getErrorMessage(errorCode);
+        String errorCode = determineErrorCode(ex.getMessage());
+        ErrorMessageService.ErrorMessageDetail errorDetail = errorMessageService.getErrorMessage(errorCode);
         
-        var error = ErrorResponse.builder()
+        ErrorResponse error = ErrorResponse.builder()
                 .userMessage(errorDetail.getUserMessage())
                 .devMessage(errorDetail.getDevMessage() + " - " + ex.getMessage())
                 .errorCode(errorCode)
@@ -40,10 +40,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleBusinessException(
             BusinessException ex, WebRequest request) {
         
-        var errorCode = determineErrorCode(ex.getMessage());
-        var errorDetail = errorMessageService.getErrorMessage(errorCode);
+        String errorCode = determineErrorCode(ex.getMessage());
+        ErrorMessageService.ErrorMessageDetail errorDetail = errorMessageService.getErrorMessage(errorCode);
         
-        var error = ErrorResponse.builder()
+        ErrorResponse error = ErrorResponse.builder()
                 .userMessage(errorDetail.getUserMessage())
                 .devMessage(errorDetail.getDevMessage() + " - " + ex.getMessage())
                 .errorCode(errorCode)
@@ -57,13 +57,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex, WebRequest request) {
         
-        var message = ex.getBindingResult().getFieldErrors().stream()
+        String message = ex.getBindingResult().getFieldErrors().stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(", "));
         
-        var errorDetail = errorMessageService.getErrorMessage("VALIDATION_ERROR");
+        ErrorMessageService.ErrorMessageDetail errorDetail = errorMessageService.getErrorMessage("VALIDATION_ERROR");
         
-        var error = ErrorResponse.builder()
+        ErrorResponse error = ErrorResponse.builder()
                 .userMessage(errorDetail.getUserMessage())
                 .devMessage(errorDetail.getDevMessage() + " - " + message)
                 .errorCode("VALIDATION_ERROR")
@@ -77,13 +77,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleConstraintViolationException(
             jakarta.validation.ConstraintViolationException ex, WebRequest request) {
         
-        var message = ex.getConstraintViolations().stream()
+        String message = ex.getConstraintViolations().stream()
                 .map(violation -> violation.getMessage())
                 .collect(Collectors.joining(", "));
         
-        var errorDetail = errorMessageService.getErrorMessage("VALIDATION_ERROR");
+        ErrorMessageService.ErrorMessageDetail errorDetail = errorMessageService.getErrorMessage("VALIDATION_ERROR");
         
-        var error = ErrorResponse.builder()
+        ErrorResponse error = ErrorResponse.builder()
                 .userMessage(errorDetail.getUserMessage())
                 .devMessage(errorDetail.getDevMessage() + " - " + message)
                 .errorCode("VALIDATION_ERROR")
@@ -97,9 +97,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(
             AccessDeniedException ex, WebRequest request) {
         
-        var errorDetail = errorMessageService.getErrorMessage("ACCESS_DENIED");
+        ErrorMessageService.ErrorMessageDetail errorDetail = errorMessageService.getErrorMessage("ACCESS_DENIED");
         
-        var error = ErrorResponse.builder()
+        ErrorResponse error = ErrorResponse.builder()
                 .userMessage(errorDetail.getUserMessage())
                 .devMessage(errorDetail.getDevMessage())
                 .errorCode("ACCESS_DENIED")
@@ -113,9 +113,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGlobalException(
             Exception ex, WebRequest request) {
         
-        var errorDetail = errorMessageService.getErrorMessage("INTERNAL_SERVER_ERROR");
+        ErrorMessageService.ErrorMessageDetail errorDetail = errorMessageService.getErrorMessage("INTERNAL_SERVER_ERROR");
         
-        var error = ErrorResponse.builder()
+        ErrorResponse error = ErrorResponse.builder()
                 .userMessage(errorDetail.getUserMessage())
                 .devMessage(errorDetail.getDevMessage() + " - " + ex.getMessage())
                 .errorCode("INTERNAL_SERVER_ERROR")

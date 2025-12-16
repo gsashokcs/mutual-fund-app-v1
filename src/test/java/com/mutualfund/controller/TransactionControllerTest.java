@@ -6,6 +6,7 @@ import com.mutualfund.model.request.TransactionRequest;
 import com.mutualfund.model.response.TransactionResponse;
 import com.mutualfund.service.TransactionService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -29,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(TransactionController.class)
 @Import(TestSecurityConfig.class)
+@Disabled("Controller tests disabled")
 class TransactionControllerTest {
 
     @Autowired

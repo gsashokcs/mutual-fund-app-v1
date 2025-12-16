@@ -5,6 +5,7 @@ import com.mutualfund.model.request.TransactionRequest;
 import com.mutualfund.model.response.TransactionResponse;
 import com.mutualfund.exception.BusinessException;
 import com.mutualfund.model.entity.Holding;
+import com.mutualfund.model.entity.MutualFund;
 import com.mutualfund.model.entity.Transaction;
 import com.mutualfund.repository.HoldingRepository;
 import com.mutualfund.repository.TransactionRepository;
@@ -42,9 +43,9 @@ public class TransactionService {
         MDC.put("fundId", String.valueOf(request.getFundId()));
         log.info("Processing buy transaction for user ID: {}, fund ID: {}", userId, request.getFundId());
 
-        var fund = mutualFundService.getCurrentMutualFund(request.getFundId());
+        MutualFund fund = mutualFundService.getCurrentMutualFund(request.getFundId());
 
-        var transaction = Transaction.builder()
+        Transaction transaction = Transaction.builder()
                 .userId(userId)
                 .fundId(request.getFundId())
                 .units(request.getUnits())
@@ -52,7 +53,7 @@ public class TransactionService {
                 .type(Transaction.TransactionType.BUY)
                 .build();
 
-        var savedTransaction = transactionRepository.save(transaction);
+        Transaction savedTransaction = transactionRepository.save(transaction);
 
         updateHolding(userId, request.getFundId(), request.getUnits(), fund.getNav(), true);
 
@@ -70,16 +71,16 @@ public class TransactionService {
         MDC.put("fundId", String.valueOf(request.getFundId()));
         log.info("Processing redeem transaction for user ID: {}, fund ID: {}", userId, request.getFundId());
 
-        var fund = mutualFundService.getCurrentMutualFund(request.getFundId());
+        MutualFund fund = mutualFundService.getCurrentMutualFund(request.getFundId());
 
-        var holding = holdingRepository.findByUserIdAndFundId(userId, request.getFundId())
+        Holding holding = holdingRepository.findByUserIdAndFundId(userId, request.getFundId())
                 .orElseThrow(() -> new BusinessException("No holdings found for this fund"));
 
         if (holding.getUnits().compareTo(request.getUnits()) < 0) {
             throw new BusinessException("Insufficient units. Available: " + holding.getUnits());
         }
 
-        var transaction = Transaction.builder()
+        Transaction transaction = Transaction.builder()
                 .userId(userId)
                 .fundId(request.getFundId())
                 .units(request.getUnits())
@@ -87,7 +88,7 @@ public class TransactionService {
                 .type(Transaction.TransactionType.REDEEM)
                 .build();
 
-        var savedTransaction = transactionRepository.save(transaction);
+        Transaction savedTransaction = transactionRepository.save(transaction);
 
         updateHolding(userId, request.getFundId(), request.getUnits(), fund.getNav(), false);
 
@@ -101,7 +102,7 @@ public class TransactionService {
         MDC.put("userId", String.valueOf(userId));
         log.info("Fetching holdings for user ID: {}", userId);
         
-        var holdings = holdingRepository.findByUserId(userId);
+        List<Holding> holdings = holdingRepository.findByUserId(userId);
         
         return holdings.stream()
                 .filter(holding -> holding.getUnits().compareTo(BigDecimal.ZERO) > 0)
@@ -115,7 +116,7 @@ public class TransactionService {
         MDC.put("userId", String.valueOf(userId));
         log.info("Fetching transactions for user ID: {}", userId);
         
-        var transactions = transactionRepository.findByUserId(userId);
+        List<Transaction> transactions = transactionRepository.findByUserId(userId);
         
         return transactions.stream()
                 .map(t -> mapToTransactionResponse(t, ""))
@@ -133,7 +134,7 @@ public class TransactionService {
     }
 
     private void updateHolding(Long userId, Long fundId, BigDecimal units, BigDecimal nav, boolean isBuy) {
-        var holding = holdingRepository.findByUserIdAndFundId(userId, fundId)
+        Holding holding = holdingRepository.findByUserIdAndFundId(userId, fundId)
                 .orElseGet(() -> Holding.builder()
                         .userId(userId)
                         .fundId(fundId)
@@ -165,8 +166,8 @@ public class TransactionService {
     }
 
     private HoldingResponse mapToHoldingResponse(Holding holding) {
-        var currentFund = mutualFundService.getCurrentMutualFund(holding.getFundId());
-        var currentValue = holding.getUnits().multiply(currentFund.getNav())
+        MutualFund currentFund = mutualFundService.getCurrentMutualFund(holding.getFundId());
+        BigDecimal currentValue = holding.getUnits().multiply(currentFund.getNav())
                 .setScale(2, RoundingMode.HALF_UP);
         
         return HoldingResponse.builder()

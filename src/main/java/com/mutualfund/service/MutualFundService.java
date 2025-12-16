@@ -32,20 +32,20 @@ public class MutualFundService {
     public MutualFund addMutualFund(MutualFundRequest request) {
         log.info("Adding new mutual fund: {}", request.getName());
         
-        var today = LocalDate.now();
+        LocalDate today = LocalDate.now();
         
         mutualFundRepository.findByNameAndNavDate(request.getName(), today)
                 .ifPresent(existing -> {
                     throw new BusinessException("Mutual fund already exists for today: " + request.getName());
                 });
 
-        var fund = MutualFund.builder()
+        MutualFund fund = MutualFund.builder()
                 .name(request.getName())
                 .nav(request.getNav())
                 .navDate(today)
                 .build();
 
-        var savedFund = mutualFundRepository.save(fund);
+        MutualFund savedFund = mutualFundRepository.save(fund);
         MDC.put("fundId", String.valueOf(savedFund.getFundId()));
         log.info("Mutual fund added successfully with ID: {}", savedFund.getFundId());
         
@@ -62,13 +62,13 @@ public class MutualFundService {
         MDC.put("fundId", String.valueOf(fundId));
         log.info("Updating NAV for fund ID: {}", fundId);
         
-        var today = LocalDate.now();
-        var fund = mutualFundRepository.findByFundIdAndNavDate(fundId, today)
+        LocalDate today = LocalDate.now();
+        MutualFund fund = mutualFundRepository.findByFundIdAndNavDate(fundId, today)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Mutual fund not found with ID: " + fundId + " for current date"));
 
         fund.setNav(request.getNav());
-        var updatedFund = mutualFundRepository.save(fund);
+        MutualFund updatedFund = mutualFundRepository.save(fund);
         
         log.info("NAV updated successfully for fund ID: {}", fundId);
         return updatedFund;

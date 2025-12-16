@@ -23,8 +23,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/users/register").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                .requestMatchers("/actuator/**").hasRole("ADMIN")
+                .requestMatchers("/actuator/**").permitAll()
+                //                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                // .requestMatchers("/actuator/**").hasRole("ADMIN")
+
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/v1/users/**").authenticated()
                 .anyRequest().authenticated()

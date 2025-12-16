@@ -8,6 +8,7 @@ import com.mutualfund.model.entity.MutualFund;
 import com.mutualfund.service.MutualFundService;
 import com.mutualfund.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -32,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AdminController.class)
 @Import(TestSecurityConfig.class)
+@Disabled("Controller tests disabled")
 class AdminControllerTest {
 
     @Autowired

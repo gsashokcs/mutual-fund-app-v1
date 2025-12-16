@@ -38,13 +38,13 @@ public class UserService {
             throw new BusinessException("Username already exists: " + request.getUsername());
         }
 
-        var user = User.builder()
+        User user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(User.Role.USER)
                 .build();
 
-        var savedUser = userRepository.save(user);
+        User savedUser = userRepository.save(user);
         log.info("User registered successfully with ID: {}", savedUser.getId());
         
         return mapToResponse(savedUser);

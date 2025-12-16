@@ -3,17 +3,8 @@
     <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="mutual-fund-management"/>
     
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <includeMdcKeyName>userId</includeMdcKeyName>
-            <includeMdcKeyName>transactionId</includeMdcKeyName>
-            <includeMdcKeyName>fundId</includeMdcKeyName>
-            <includeMdcKeyName>username</includeMdcKeyName>
-            <customFields>{"application":"${appName}"}</customFields>
-            <fieldNames>
-                <timestamp>timestamp</timestamp>
-                <version>[ignore]</version>
-                <levelValue>[ignore]</levelValue>
-            </fieldNames>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -38,14 +29,6 @@
         </encoder>
     </appender>
 
-    <springProfile name="dev">
-        <root level="INFO">
-            <appender-ref ref="CONSOLE"/>
-        </root>
-        <logger name="com.mutualfund" level="DEBUG"/>
-        <logger name="org.springframework.security" level="DEBUG"/>
-    </springProfile>
-
     <springProfile name="test">
         <root level="WARN">
             <appender-ref ref="CONSOLE"/>
@@ -62,7 +45,7 @@
         <logger name="org.springframework.security" level="WARN"/>
     </springProfile>
 
-    <springProfile name="!dev &amp; !test &amp; !prod">
+    <springProfile name="!test &amp; !prod">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>
