@@ -16,11 +16,12 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @Autowired
+
+                        @Autowired
     private ErrorMessageService errorMessageService;
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
+    @ExceptionHandler (ResourceNotFoundException.class)
+    public               ResponseEntity<ErrorResponse> handleResourceNotFoundException(
             ResourceNotFoundException ex, WebRequest request) {
         
         String errorCode = determineErrorCode(ex.getMessage());

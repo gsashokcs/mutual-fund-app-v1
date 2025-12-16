@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+    "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+    "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+    <!-- Suppress checks for generated files -->
+    <suppress checks=".*" files="target[\\/].*"/>
+    
+    <!-- Suppress line length for entity classes with long annotations -->
+    <suppress checks="LineLength" files=".*entity.*\.java"/>
+    
+    <!-- Suppress parameter number for builder patterns and constructors -->
+    <suppress checks="ParameterNumber" files=".*Request\.java"/>
+    <suppress checks="ParameterNumber" files=".*Response\.java"/>
+    
+    <!-- Allow visibility modifier for Lombok annotated classes -->
+    <suppress checks="VisibilityModifier" files=".*model.*\.java"/>
+    <suppress checks="VisibilityModifier" files=".*Request\.java"/>
+    <suppress checks="VisibilityModifier" files=".*Response\.java"/>
+</suppressions>

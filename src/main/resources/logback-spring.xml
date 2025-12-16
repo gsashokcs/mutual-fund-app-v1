@@ -34,6 +34,9 @@
             <appender-ref ref="CONSOLE"/>
         </root>
         <logger name="com.mutualfund" level="INFO"/>
+        <logger name="org.springframework.security" level="WARN"/>
+        <logger name="org.springframework.web" level="WARN"/>
+        <logger name="org.hibernate" level="WARN"/>
     </springProfile>
 
     <springProfile name="prod">
@@ -43,12 +46,17 @@
         </root>
         <logger name="com.mutualfund" level="INFO"/>
         <logger name="org.springframework.security" level="WARN"/>
+        <logger name="org.springframework.web" level="WARN"/>
+        <logger name="org.hibernate" level="WARN"/>
     </springProfile>
 
     <springProfile name="!test &amp; !prod">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>
-        <logger name="com.mutualfund" level="DEBUG"/>
+        <logger name="com.mutualfund" level="INFO"/>
+        <logger name="org.springframework.security" level="WARN"/>
+        <logger name="org.springframework.web" level="WARN"/>
+        <logger name="org.hibernate" level="WARN"/>
     </springProfile>
 </configuration>
