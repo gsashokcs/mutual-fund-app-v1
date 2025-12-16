@@ -20,23 +20,14 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/users/register").permitAll()
-                .requestMatchers("/h2-console/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/actuator/**").permitAll()
-                //                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                // .requestMatchers("/actuator/**").hasRole("ADMIN")
-
-                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/v1/users/**").authenticated()
-                .anyRequest().authenticated()
+            .anyRequest().permitAll()
             )
             .httpBasic(basic -> {})
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .headers(headers -> headers
-                .frameOptions(frame -> frame.sameOrigin())
+            .frameOptions(frame -> frame.sameOrigin())
             );
 
         return http.build();
