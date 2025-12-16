@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
-import org.slf4j.MDC;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -43,8 +42,6 @@ public class TransactionService {
                 @CacheEvict(value = "transactions", key = "#userId")
             })
     public TransactionResponse buyUnits(Long userId, TransactionRequest request) {
-        MDC.put("userId", String.valueOf(userId));
-        MDC.put("fundId", String.valueOf(request.getFundId()));
         log.info(
                 "Processing buy transaction for user ID: {}, fund ID: {}",
                 userId,
@@ -76,8 +73,6 @@ public class TransactionService {
                 @CacheEvict(value = "transactions", key = "#userId")
             })
     public TransactionResponse redeemUnits(Long userId, TransactionRequest request) {
-        MDC.put("userId", String.valueOf(userId));
-        MDC.put("fundId", String.valueOf(request.getFundId()));
         log.info(
                 "Processing redeem transaction for user ID: {}, fund ID: {}",
                 userId,
@@ -122,7 +117,6 @@ public class TransactionService {
     @Transactional(readOnly = true)
     @Cacheable(value = "holdings", key = "#userId")
     public List<HoldingResponse> getUserHoldings(Long userId) {
-        MDC.put("userId", String.valueOf(userId));
         log.info("Fetching holdings for user ID: {}", userId);
 
         List<Holding> holdings = holdingRepository.findByUserId(userId);
@@ -136,7 +130,6 @@ public class TransactionService {
     @Transactional(readOnly = true)
     @Cacheable(value = "transactions", key = "#userId")
     public List<TransactionResponse> getUserTransactions(Long userId) {
-        MDC.put("userId", String.valueOf(userId));
         log.info("Fetching transactions for user ID: {}", userId);
 
         List<Transaction> transactions = transactionRepository.findByUserId(userId);
@@ -146,7 +139,6 @@ public class TransactionService {
 
     @Transactional(readOnly = true)
     public Page<TransactionResponse> getUserTransactions(Long userId, Pageable pageable) {
-        MDC.put("userId", String.valueOf(userId));
         log.info(
                 "Fetching transactions for user ID: {} with pagination: page {}, size {}",
                 userId,

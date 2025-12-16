@@ -2,7 +2,6 @@ package com.mutualfund.service;
 
 import java.util.List;
 
-import org.slf4j.MDC;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -34,7 +33,6 @@ public class UserService {
     @Transactional
     @CacheEvict(value = "allUsers", allEntries = true)
     public UserResponse registerUser(UserRegistrationRequest request) {
-        MDC.put("username", request.getUsername());
         log.info("Registering new user: {}", request.getUsername());
 
         if (userRepository.existsByUsername(request.getUsername())) {
@@ -74,7 +72,6 @@ public class UserService {
     @Transactional(readOnly = true)
     @Cacheable(value = "users", key = "#userId")
     public UserResponse getUserById(Long userId) {
-        MDC.put("userId", String.valueOf(userId));
         log.info("Fetching user by ID: {}", userId);
         User user =
                 userRepository
@@ -94,7 +91,6 @@ public class UserService {
                 @CacheEvict(value = "allUsers", allEntries = true)
             })
     public void deleteUser(Long userId) {
-        MDC.put("userId", String.valueOf(userId));
         log.info("Deleting user with ID: {}", userId);
 
         if (!userRepository.existsById(userId)) {

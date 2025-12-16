@@ -3,7 +3,6 @@ package com.mutualfund.service;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.slf4j.MDC;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -54,7 +53,6 @@ public class MutualFundService {
                         .build();
 
         MutualFund savedFund = mutualFundRepository.save(fund);
-        MDC.put("fundId", String.valueOf(savedFund.getFundId()));
         log.info("Mutual fund added successfully with ID: {}", savedFund.getFundId());
 
         return savedFund;
@@ -68,7 +66,6 @@ public class MutualFundService {
                 @CacheEvict(value = "holdings", allEntries = true)
             })
     public MutualFund updateNav(Long fundId, NavUpdateRequest request) {
-        MDC.put("fundId", String.valueOf(fundId));
         log.info("Updating NAV for fund ID: {}", fundId);
 
         LocalDate today = LocalDate.now();
@@ -109,7 +106,6 @@ public class MutualFundService {
     @Transactional(readOnly = true)
     @Cacheable(value = "mutualFunds", key = "#fundId")
     public MutualFund getCurrentMutualFund(Long fundId) {
-        MDC.put("fundId", String.valueOf(fundId));
         log.info("Fetching mutual fund by ID: {} for current date", fundId);
 
         LocalDate today = LocalDate.now();
@@ -132,7 +128,6 @@ public class MutualFundService {
                 @CacheEvict(value = "holdings", allEntries = true)
             })
     public void deleteMutualFund(Long fundId) {
-        MDC.put("fundId", String.valueOf(fundId));
         log.info("Deleting mutual fund with ID: {}", fundId);
 
         if (!mutualFundRepository.existsById(fundId)) {
