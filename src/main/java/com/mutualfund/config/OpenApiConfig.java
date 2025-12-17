@@ -15,24 +15,8 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        return new OpenAPI()
-                .info(
-                        new Info()
-                                .title("Mutual Fund Management System API")
-                                .version("1.0.0")
-                                .description(
-                                        "RESTful API for managing mutual funds with user authentication, role-based access control, and historical NAV tracking. NAV values are managed separately from fund metadata for comprehensive historical analysis.")
-                                .contact(
-                                        new Contact()
-                                                .name("Mutual Fund Team")
-                                                .email("support@mutualfund.com")))
-                .addSecurityItem(new SecurityRequirement().addList("basicAuth"))
-                .components(
-                        new Components()
-                                .addSecuritySchemes(
-                                        "basicAuth",
-                                        new SecurityScheme()
-                                                .type(SecurityScheme.Type.HTTP)
-                                                .scheme("basic")));
+        return new OpenAPI().info(new Info().title("Mutual Fund Management System API").version("1.0.0")
+                .description("RESTful API for managing mutual funds with user authentication, role-based access control, and historical NAV tracking. NAV values are managed separately from fund metadata for comprehensive historical analysis.")
+                .contact(new Contact().name("Mutual Fund Team").email("support@mutualfund.com"))).addSecurityItem(new SecurityRequirement().addList("basicAuth")).components(new Components().addSecuritySchemes("basicAuth", new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("basic")));
     }
 }

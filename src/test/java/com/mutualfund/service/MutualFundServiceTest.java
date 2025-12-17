@@ -29,10 +29,13 @@ import com.mutualfund.repository.NavRepository;
 @ExtendWith(MockitoExtension.class)
 class MutualFundServiceTest {
 
-    @Mock private MutualFundRepository mutualFundRepository;
-    @Mock private NavRepository navRepository;
+    @Mock
+    private MutualFundRepository mutualFundRepository;
+    @Mock
+    private NavRepository navRepository;
 
-    @InjectMocks private MutualFundService mutualFundService;
+    @InjectMocks
+    private MutualFundService mutualFundService;
 
     private MutualFund testFund;
     private MutualFundRequest fundRequest;
@@ -69,8 +72,7 @@ class MutualFundServiceTest {
 
     @Test
     void updateNavSuccess() {
-        NavUpdateRequest navRequest =
-                new NavUpdateRequest(new BigDecimal("120.00"), LocalDate.now());
+        NavUpdateRequest navRequest = new NavUpdateRequest(new BigDecimal("120.00"), LocalDate.now());
         Nav testNav = new Nav();
         testNav.setNavId(1L);
         testNav.setFundId(1L);
@@ -78,8 +80,7 @@ class MutualFundServiceTest {
         testNav.setNavDate(LocalDate.now());
 
         when(mutualFundRepository.existsById(1L)).thenReturn(true);
-        when(navRepository.findByFundIdAndNavDateAndDeletedFalse(1L, LocalDate.now()))
-                .thenReturn(Optional.empty());
+        when(navRepository.findByFundIdAndNavDateAndDeletedFalse(1L, LocalDate.now())).thenReturn(Optional.empty());
         when(navRepository.save(any(Nav.class))).thenReturn(testNav);
 
         Nav result = mutualFundService.updateNav(1L, navRequest);
@@ -90,12 +91,10 @@ class MutualFundServiceTest {
 
     @Test
     void updateNavNotFoundThrowsException() {
-        NavUpdateRequest navRequest =
-                new NavUpdateRequest(new BigDecimal("120.00"), LocalDate.now());
+        NavUpdateRequest navRequest = new NavUpdateRequest(new BigDecimal("120.00"), LocalDate.now());
         when(mutualFundRepository.existsById(1L)).thenReturn(false);
 
-        assertThrows(
-                ResourceNotFoundException.class, () -> mutualFundService.updateNav(1L, navRequest));
+        assertThrows(ResourceNotFoundException.class, () -> mutualFundService.updateNav(1L, navRequest));
     }
 
     @Test

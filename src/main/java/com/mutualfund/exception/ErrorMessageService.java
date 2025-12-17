@@ -23,10 +23,8 @@ public class ErrorMessageService {
     public void loadErrorMessages() {
         try {
             ClassPathResource resource = new ClassPathResource("error-messages.json");
-            errorMessages =
-                    objectMapper.readValue(
-                            resource.getInputStream(),
-                            new TypeReference<Map<String, ErrorMessageDetail>>() {});
+            errorMessages = objectMapper.readValue(resource.getInputStream(), new TypeReference<Map<String, ErrorMessageDetail>>() {
+            });
         } catch (IOException e) {
             throw new RuntimeException("Failed to load error messages from JSON file", e);
         }
@@ -35,20 +33,20 @@ public class ErrorMessageService {
     /**
      * Retrieves error message details for a given error code.
      *
-     * @param errorCode the error code to look up
+     * @param errorCode
+     *            the error code to look up
      * @return ErrorMessageDetail containing user and developer messages
      */
     public ErrorMessageDetail getErrorMessage(String errorCode) {
-        return errorMessages.getOrDefault(
-                errorCode,
-                new ErrorMessageDetail("An error occurred.", "Error code: " + errorCode));
+        return errorMessages.getOrDefault(errorCode, new ErrorMessageDetail("An error occurred.", "Error code: " + errorCode));
     }
 
     public static class ErrorMessageDetail {
         private String userMessage;
         private String devMessage;
 
-        public ErrorMessageDetail() {}
+        public ErrorMessageDetail() {
+        }
 
         public ErrorMessageDetail(String userMessage, String devMessage) {
             this.userMessage = userMessage;

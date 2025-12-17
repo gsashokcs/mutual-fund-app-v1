@@ -27,13 +27,17 @@ import com.mutualfund.repository.UserRepository;
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
-    @Mock private UserRepository userRepository;
+    @Mock
+    private UserRepository userRepository;
 
-    @Mock private PasswordEncoder passwordEncoder;
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
-    @Mock private SecurityService securityService;
+    @Mock
+    private SecurityService securityService;
 
-    @InjectMocks private UserService userService;
+    @InjectMocks
+    private UserService userService;
 
     private User testUser;
     private UserRegistrationRequest registrationRequest;

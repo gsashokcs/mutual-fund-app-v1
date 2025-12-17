@@ -9,8 +9,7 @@ import com.mutualfund.exception.ErrorCode;
 import com.mutualfund.model.entity.Holding;
 
 /**
- * Strategy implementation for redeem transactions. Deducts units and value from holdings with
- * validation.
+ * Strategy implementation for redeem transactions. Deducts units and value from holdings with validation.
  */
 @Component
 public class RedeemTransactionStrategy implements ITransactionStrategy {
@@ -18,9 +17,7 @@ public class RedeemTransactionStrategy implements ITransactionStrategy {
     @Override
     public void processTransaction(Holding holding, BigDecimal units, BigDecimal nav) {
         if (!validateTransaction(holding, units)) {
-            throw new BusinessException(
-                    ErrorCode.INSUFFICIENT_UNITS,
-                    "Insufficient units. Available: " + holding.getUnits());
+            throw new BusinessException(ErrorCode.INSUFFICIENT_UNITS, "Insufficient units. Available: " + holding.getUnits());
         }
 
         BigDecimal transactionValue = units.multiply(nav);

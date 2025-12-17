@@ -14,17 +14,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Entity representing the Net Asset Value (NAV) for a mutual fund on a specific date. Tracks
- * historical NAV values for each fund with soft delete support.
+ * Entity representing the Net Asset Value (NAV) for a mutual fund on a specific date. Tracks historical NAV values for each fund with soft delete support.
  *
  * @author Mutual Fund Management System
  * @version 1.0
  */
 @Entity
 @Schema(description = "Historical NAV entry for a mutual fund on a specific date")
-@Table(
-        name = "nav_history",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"fund_id", "nav_date"}))
+@Table(name = "nav_history", uniqueConstraints = @UniqueConstraint(columnNames = {"fund_id", "nav_date"}))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

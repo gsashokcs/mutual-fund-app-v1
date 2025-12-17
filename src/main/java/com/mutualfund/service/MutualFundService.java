@@ -29,25 +29,21 @@ public class MutualFundService implements IMutualFundService {
     private final NavRepository navRepository;
 
     /**
-     * Adds a new mutual fund to the system. NAV should be added separately using the updateNav
-     * method.
+     * Adds a new mutual fund to the system. NAV should be added separately using the updateNav method.
      *
-     * @param request the mutual fund request containing fund name
+     * @param request
+     *            the mutual fund request containing fund name
      * @return MutualFund entity that was created
-     * @throws BusinessException if fund with the same name already exists
+     * @throws BusinessException
+     *             if fund with the same name already exists
      */
     @Transactional
     public MutualFund addMutualFund(MutualFundRequest request) {
         log.info("Adding new mutual fund: {}", request.getName());
 
-        mutualFundRepository
-                .findByName(request.getName())
-                .ifPresent(
-                        existing -> {
-                            throw new BusinessException(
-                                    ErrorCode.DUPLICATE_FUND,
-                                    "Mutual fund already exists: " + request.getName());
-                        });
+        mutualFundRepository.findByName(request.getName()).ifPresent(existing -> {
+            throw new BusinessException(ErrorCode.DUPLICATE_FUND, "Mutual fund already exists: " + request.getName());
+        });
 
         MutualFund fund = MutualFund.builder().name(request.getName()).build();
 
@@ -58,13 +54,15 @@ public class MutualFundService implements IMutualFundService {
     }
 
     /**
-     * Updates the Net Asset Value (NAV) for a mutual fund for a specific date. If a NAV entry
-     * exists for the given date, it updates the value. Otherwise, creates a new entry.
+     * Updates the Net Asset Value (NAV) for a mutual fund for a specific date. If a NAV entry exists for the given date, it updates the value. Otherwise, creates a new entry.
      *
-     * @param fundId the ID of the fund to update
-     * @param request the NAV update request containing the new NAV value and date
+     * @param fundId
+     *            the ID of the fund to update
+     * @param request
+     *            the NAV update request containing the new NAV value and date
      * @return Nav entity with updated or created NAV
-     * @throws ResourceNotFoundException if fund is not found
+     * @throws ResourceNotFoundException
+     *             if fund is not found
      */
     @Transactional
     public Nav updateNav(Long fundId, NavUpdateRequest request) {
@@ -72,15 +70,11 @@ public class MutualFundService implements IMutualFundService {
 
         // Verify fund exists
         if (!mutualFundRepository.existsById(fundId)) {
-            throw new ResourceNotFoundException(
-                    ErrorCode.MUTUAL_FUND_NOT_FOUND, "Mutual fund not found with ID: " + fundId);
+            throw new ResourceNotFoundException(ErrorCode.MUTUAL_FUND_NOT_FOUND, "Mutual fund not found with ID: " + fundId);
         }
 
         // Find existing NAV entry or create new one
-        Nav nav =
-                navRepository
-                        .findByFundIdAndNavDateAndDeletedFalse(fundId, request.getNavDate())
-                        .orElse(Nav.builder().fundId(fundId).navDate(request.getNavDate()).build());
+        Nav nav = navRepository.findByFundIdAndNavDateAndDeletedFalse(fundId, request.getNavDate()).orElse(Nav.builder().fundId(fundId).navDate(request.getNavDate()).build());
 
         nav.setNav(request.getNav());
         Nav savedNav = navRepository.save(nav);
@@ -103,52 +97,46 @@ public class MutualFundService implements IMutualFundService {
     /**
      * Retrieves all mutual funds with pagination support.
      *
-     * @param pageable the pagination information
+     * @param pageable
+     *            the pagination information
      * @return Page of MutualFund entities
      */
     @Transactional(readOnly = true)
     public Page<MutualFund> getAllMutualFunds(Pageable pageable) {
-        log.info(
-                "Fetching mutual funds with pagination: page {}, size {}",
-                pageable.getPageNumber(),
-                pageable.getPageSize());
+        log.info("Fetching mutual funds with pagination: page {}, size {}", pageable.getPageNumber(), pageable.getPageSize());
         return mutualFundRepository.findAll(pageable);
     }
 
     /**
      * Retrieves a mutual fund by its ID.
      *
-     * @param fundId the ID of the fund to retrieve
-     * @return MutualFund entity (without NAV data - NAV should be queried separately using
-     *     NavRepository)
-     * @throws ResourceNotFoundException if fund is not found
+     * @param fundId
+     *            the ID of the fund to retrieve
+     * @return MutualFund entity (without NAV data - NAV should be queried separately using NavRepository)
+     * @throws ResourceNotFoundException
+     *             if fund is not found
      */
     @Transactional(readOnly = true)
     public MutualFund getCurrentMutualFund(Long fundId) {
         log.info("Fetching mutual fund by ID: {}", fundId);
 
-        return mutualFundRepository
-                .findById(fundId)
-                .orElseThrow(
-                        () ->
-                                new ResourceNotFoundException(
-                                        ErrorCode.MUTUAL_FUND_NOT_FOUND,
-                                        "Mutual fund not found with ID: " + fundId));
+        return mutualFundRepository.findById(fundId).orElseThrow(() -> new ResourceNotFoundException(ErrorCode.MUTUAL_FUND_NOT_FOUND, "Mutual fund not found with ID: " + fundId));
     }
 
     /**
      * Deletes a mutual fund from the system and soft deletes all associated NAV entries.
      *
-     * @param fundId the ID of the fund to delete
-     * @throws ResourceNotFoundException if fund is not found
+     * @param fundId
+     *            the ID of the fund to delete
+     * @throws ResourceNotFoundException
+     *             if fund is not found
      */
     @Transactional
     public void deleteMutualFund(Long fundId) {
         log.info("Deleting mutual fund with ID: {}", fundId);
 
         if (!mutualFundRepository.existsById(fundId)) {
-            throw new ResourceNotFoundException(
-                    ErrorCode.MUTUAL_FUND_NOT_FOUND, "Mutual fund not found with ID: " + fundId);
+            throw new ResourceNotFoundException(ErrorCode.MUTUAL_FUND_NOT_FOUND, "Mutual fund not found with ID: " + fundId);
         }
 
         // Soft delete all NAV entries for this fund

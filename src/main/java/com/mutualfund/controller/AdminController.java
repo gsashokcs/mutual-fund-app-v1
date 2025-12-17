@@ -33,9 +33,7 @@ import lombok.RequiredArgsConstructor;
 @Validated
 @PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "basicAuth")
-@Tag(
-        name = "Admin Operations",
-        description = "Administrative endpoints for managing funds and users")
+@Tag(name = "Admin Operations", description = "Administrative endpoints for managing funds and users")
 public class AdminController {
 
     private final MutualFundService mutualFundService;
@@ -44,14 +42,12 @@ public class AdminController {
     /**
      * Creates a new mutual fund. NAV should be added separately using the Update NAV endpoint.
      *
-     * @param request the mutual fund request with name
+     * @param request
+     *            the mutual fund request with name
      * @return ResponseEntity with MutualFund and HTTP 201 status
      */
     @PostMapping("/funds")
-    @Operation(
-            summary = "Add mutual fund",
-            description =
-                    "Creates a new mutual fund with metadata only. NAV values are managed separately for historical tracking. Use PUT /funds/{fundId}/nav to add NAV values for specific dates.")
+    @Operation(summary = "Add mutual fund", description = "Creates a new mutual fund with metadata only. NAV values are managed separately for historical tracking. Use PUT /funds/{fundId}/nav to add NAV values for specific dates.")
     public ResponseEntity<MutualFund> addMutualFund(@Valid @RequestBody MutualFundRequest request) {
         MutualFund fund = mutualFundService.addMutualFund(request);
         return new ResponseEntity<>(fund, HttpStatus.CREATED);
@@ -60,18 +56,15 @@ public class AdminController {
     /**
      * Updates or creates the NAV for a mutual fund on a specific date.
      *
-     * @param fundId the ID of the fund to update
-     * @param request the NAV update request with nav value and date
+     * @param fundId
+     *            the ID of the fund to update
+     * @param request
+     *            the NAV update request with nav value and date
      * @return ResponseEntity with Nav entity and HTTP 200 status
      */
     @PutMapping("/funds/{fundId}/nav")
-    @Operation(
-            summary = "Update NAV",
-            description =
-                    "Updates or creates Net Asset Value for a mutual fund on a specific date. If NAV exists for the date, it will be updated; otherwise, a new NAV entry will be created. This enables historical NAV tracking.")
-    public ResponseEntity<Nav> updateNav(
-            @PathVariable @Positive(message = "Fund ID must be positive") Long fundId,
-            @Valid @RequestBody NavUpdateRequest request) {
+    @Operation(summary = "Update NAV", description = "Updates or creates Net Asset Value for a mutual fund on a specific date. If NAV exists for the date, it will be updated; otherwise, a new NAV entry will be created. This enables historical NAV tracking.")
+    public ResponseEntity<Nav> updateNav(@PathVariable @Positive(message = "Fund ID must be positive") Long fundId, @Valid @RequestBody NavUpdateRequest request) {
         Nav nav = mutualFundService.updateNav(fundId, request);
         return ResponseEntity.ok(nav);
     }
@@ -79,20 +72,17 @@ public class AdminController {
     /**
      * Retrieves all mutual funds with pagination.
      *
-     * @param page the page number (default 0)
-     * @param size the page size (default 10)
-     * @param sortBy the field to sort by (default fundId)
+     * @param page
+     *            the page number (default 0)
+     * @param size
+     *            the page size (default 10)
+     * @param sortBy
+     *            the field to sort by (default fundId)
      * @return ResponseEntity with Page of MutualFund and HTTP 200 status
      */
     @GetMapping("/funds")
-    @Operation(
-            summary = "List all funds",
-            description =
-                    "Retrieves all mutual funds in the system with pagination. Returns fund metadata only; NAV values should be queried separately using the NavRepository or transaction endpoints.")
-    public ResponseEntity<Page<MutualFund>> getAllFunds(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "fundId") String sortBy) {
+    @Operation(summary = "List all funds", description = "Retrieves all mutual funds in the system with pagination. Returns fund metadata only; NAV values should be queried separately using the NavRepository or transaction endpoints.")
+    public ResponseEntity<Page<MutualFund>> getAllFunds(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "fundId") String sortBy) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
         Page<MutualFund> funds = mutualFundService.getAllMutualFunds(pageable);
         return ResponseEntity.ok(funds);
@@ -101,16 +91,13 @@ public class AdminController {
     /**
      * Deletes a mutual fund from the system.
      *
-     * @param fundId the ID of the fund to delete
+     * @param fundId
+     *            the ID of the fund to delete
      * @return ResponseEntity with HTTP 204 status
      */
     @DeleteMapping("/funds/{fundId}")
-    @Operation(
-            summary = "Delete fund",
-            description =
-                    "Removes a mutual fund from the system. All associated NAV entries are soft-deleted for audit purposes before the fund is removed.")
-    public ResponseEntity<Void> deleteFund(
-            @PathVariable @Positive(message = "Fund ID must be positive") Long fundId) {
+    @Operation(summary = "Delete fund", description = "Removes a mutual fund from the system. All associated NAV entries are soft-deleted for audit purposes before the fund is removed.")
+    public ResponseEntity<Void> deleteFund(@PathVariable @Positive(message = "Fund ID must be positive") Long fundId) {
         mutualFundService.deleteMutualFund(fundId);
         return ResponseEntity.noContent().build();
     }
@@ -118,15 +105,13 @@ public class AdminController {
     /**
      * Creates a new user with specified role (admin operation).
      *
-     * @param request the user creation request with username, password, and role
+     * @param request
+     *            the user creation request with username, password, and role
      * @return ResponseEntity with UserResponse and HTTP 201 status
      */
     @PostMapping("/users")
-    @Operation(
-            summary = "Create user",
-            description = "Creates a new user with specified role (USER or ADMIN)")
-    public ResponseEntity<UserResponse> createUser(
-            @Valid @RequestBody AdminUserCreationRequest request) {
+    @Operation(summary = "Create user", description = "Creates a new user with specified role (USER or ADMIN)")
+    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody AdminUserCreationRequest request) {
         UserResponse user = userService.createUser(request);
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
@@ -134,19 +119,17 @@ public class AdminController {
     /**
      * Retrieves all users with pagination.
      *
-     * @param page the page number (default 0)
-     * @param size the page size (default 10)
-     * @param sortBy the field to sort by (default id)
+     * @param page
+     *            the page number (default 0)
+     * @param size
+     *            the page size (default 10)
+     * @param sortBy
+     *            the field to sort by (default id)
      * @return ResponseEntity with Page of UserResponse and HTTP 200 status
      */
     @GetMapping("/users")
-    @Operation(
-            summary = "List all users",
-            description = "Retrieves all registered users with pagination")
-    public ResponseEntity<Page<UserResponse>> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy) {
+    @Operation(summary = "List all users", description = "Retrieves all registered users with pagination")
+    public ResponseEntity<Page<UserResponse>> getAllUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "id") String sortBy) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
         Page<UserResponse> users = userService.getAllUsers(pageable);
         return ResponseEntity.ok(users);
@@ -155,7 +138,8 @@ public class AdminController {
     /**
      * Deletes a user from the system.
      *
-     * @param userId the ID of the user to delete
+     * @param userId
+     *            the ID of the user to delete
      * @return ResponseEntity with HTTP 204 status
      */
     @DeleteMapping("/users/{userId}")

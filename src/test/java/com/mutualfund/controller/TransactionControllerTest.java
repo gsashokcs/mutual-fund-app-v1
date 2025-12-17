@@ -34,11 +34,14 @@ import com.mutualfund.service.TransactionService;
 @Disabled("Controller tests disabled")
 class TransactionControllerTest {
 
-    @Autowired private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-    @Autowired private ObjectMapper objectMapper;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    @MockitoBean private TransactionService transactionService;
+    @MockitoBean
+    private TransactionService transactionService;
 
     private TransactionRequest transactionRequest;
     private TransactionResponse transactionResponse;
@@ -88,17 +91,9 @@ class TransactionControllerTest {
     @WithMockUser(username = "testuser", roles = "USER")
     void redeemUnitsSuccess() throws Exception {
         transactionResponse.setType("REDEEM");
-        when(transactionService.redeemUnits(anyLong(), any(TransactionRequest.class)))
-                .thenReturn(transactionResponse);
+        when(transactionService.redeemUnits(anyLong(), any(TransactionRequest.class))).thenReturn(transactionResponse);
 
-        mockMvc.perform(
-                        post("/api/v1/users/1/redeem")
-                                .with(csrf())
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(transactionRequest)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.transactionId").value(1))
-                .andExpect(jsonPath("$.type").value("REDEEM"));
+        mockMvc.perform(post("/api/v1/users/1/redeem").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(transactionRequest))).andExpect(status().isCreated()).andExpect(jsonPath("$.transactionId").value(1)).andExpect(jsonPath("$.type").value("REDEEM"));
     }
 
     @Test
@@ -107,11 +102,7 @@ class TransactionControllerTest {
         List<HoldingResponse> holdings = Arrays.asList(holdingResponse);
         when(transactionService.getUserHoldings(1L)).thenReturn(holdings);
 
-        mockMvc.perform(get("/api/v1/users/1/holdings"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].fundId").value(1))
-                .andExpect(jsonPath("$[0].fundName").value("Test Fund"))
-                .andExpect(jsonPath("$[0].units").value(10.0000));
+        mockMvc.perform(get("/api/v1/users/1/holdings")).andExpect(status().isOk()).andExpect(jsonPath("$[0].fundId").value(1)).andExpect(jsonPath("$[0].fundName").value("Test Fund")).andExpect(jsonPath("$[0].units").value(10.0000));
     }
 
     @Test
@@ -120,19 +111,11 @@ class TransactionControllerTest {
         List<TransactionResponse> transactions = Arrays.asList(transactionResponse);
         when(transactionService.getUserTransactions(1L)).thenReturn(transactions);
 
-        mockMvc.perform(get("/api/v1/users/1/transactions"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].transactionId").value(1))
-                .andExpect(jsonPath("$[0].type").value("BUY"));
+        mockMvc.perform(get("/api/v1/users/1/transactions")).andExpect(status().isOk()).andExpect(jsonPath("$[0].transactionId").value(1)).andExpect(jsonPath("$[0].type").value("BUY"));
     }
 
     @Test
     void buyUnitsUnauthorized() throws Exception {
-        mockMvc.perform(
-                        post("/api/v1/users/1/buy")
-                                .with(csrf())
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(transactionRequest)))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/api/v1/users/1/buy").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(transactionRequest))).andExpect(status().isUnauthorized());
     }
 }

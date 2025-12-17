@@ -27,11 +27,14 @@ import com.mutualfund.service.UserService;
 @Disabled("Controller tests disabled")
 class UserControllerTest {
 
-    @Autowired private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-    @Autowired private ObjectMapper objectMapper;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    @MockitoBean private UserService userService;
+    @MockitoBean
+    private UserService userService;
 
     private UserRegistrationRequest registrationRequest;
     private UserResponse userResponse;
@@ -60,12 +63,7 @@ class UserControllerTest {
     void registerUserInvalidRequestBadRequest() throws Exception {
         UserRegistrationRequest invalidRequest = new UserRegistrationRequest("ab", "123");
 
-        mockMvc.perform(
-                        post("/api/v1/users/register")
-                                .with(csrf())
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(invalidRequest)))
-                .andExpect(status().isBadRequest());
+        mockMvc.perform(post("/api/v1/users/register").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(invalidRequest))).andExpect(status().isBadRequest());
     }
 
     @Test

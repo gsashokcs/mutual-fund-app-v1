@@ -37,18 +37,15 @@ public class TransactionController {
     /**
      * Processes a buy transaction for mutual fund units.
      *
-     * @param userId the ID of the user making the purchase
-     * @param request the transaction request with fund ID and units
+     * @param userId
+     *            the ID of the user making the purchase
+     * @param request
+     *            the transaction request with fund ID and units
      * @return ResponseEntity with TransactionResponse and HTTP 201 status
      */
     @PostMapping("/buy")
-    @Operation(
-            summary = "Buy units",
-            description =
-                    "Purchases mutual fund units at the latest available NAV. The system fetches the most recent NAV from the historical NAV table for the specified fund.")
-    public ResponseEntity<TransactionResponse> buyUnits(
-            @PathVariable @Positive(message = "User ID must be positive") Long userId,
-            @Valid @RequestBody TransactionRequest request) {
+    @Operation(summary = "Buy units", description = "Purchases mutual fund units at the latest available NAV. The system fetches the most recent NAV from the historical NAV table for the specified fund.")
+    public ResponseEntity<TransactionResponse> buyUnits(@PathVariable @Positive(message = "User ID must be positive") Long userId, @Valid @RequestBody TransactionRequest request) {
         TransactionResponse response = transactionService.buyUnits(userId, request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -56,18 +53,15 @@ public class TransactionController {
     /**
      * Processes a redemption transaction for mutual fund units.
      *
-     * @param userId the ID of the user redeeming units
-     * @param request the transaction request with fund ID and units
+     * @param userId
+     *            the ID of the user redeeming units
+     * @param request
+     *            the transaction request with fund ID and units
      * @return ResponseEntity with TransactionResponse and HTTP 201 status
      */
     @PostMapping("/redeem")
-    @Operation(
-            summary = "Redeem units",
-            description =
-                    "Redeems mutual fund units at the latest available NAV. The system fetches the most recent NAV from the historical NAV table for the specified fund. Validates sufficient units before processing.")
-    public ResponseEntity<TransactionResponse> redeemUnits(
-            @PathVariable @Positive(message = "User ID must be positive") Long userId,
-            @Valid @RequestBody TransactionRequest request) {
+    @Operation(summary = "Redeem units", description = "Redeems mutual fund units at the latest available NAV. The system fetches the most recent NAV from the historical NAV table for the specified fund. Validates sufficient units before processing.")
+    public ResponseEntity<TransactionResponse> redeemUnits(@PathVariable @Positive(message = "User ID must be positive") Long userId, @Valid @RequestBody TransactionRequest request) {
         TransactionResponse response = transactionService.redeemUnits(userId, request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -75,16 +69,13 @@ public class TransactionController {
     /**
      * Retrieves all mutual fund holdings for a user.
      *
-     * @param userId the ID of the user
+     * @param userId
+     *            the ID of the user
      * @return ResponseEntity with List of HoldingResponse and HTTP 200 status
      */
     @GetMapping("/holdings")
-    @Operation(
-            summary = "View holdings",
-            description =
-                    "Retrieves all mutual fund holdings for a user with current market values calculated using the latest NAV from the historical NAV table.")
-    public ResponseEntity<List<HoldingResponse>> getHoldings(
-            @PathVariable @Positive(message = "User ID must be positive") Long userId) {
+    @Operation(summary = "View holdings", description = "Retrieves all mutual fund holdings for a user with current market values calculated using the latest NAV from the historical NAV table.")
+    public ResponseEntity<List<HoldingResponse>> getHoldings(@PathVariable @Positive(message = "User ID must be positive") Long userId) {
         List<HoldingResponse> holdings = transactionService.getUserHoldings(userId);
         return ResponseEntity.ok(holdings);
     }
@@ -92,24 +83,21 @@ public class TransactionController {
     /**
      * Retrieves transaction history for a user with pagination.
      *
-     * @param userId the ID of the user
-     * @param page the page number (default 0)
-     * @param size the page size (default 10)
-     * @param sortBy the field to sort by (default transactionDate)
+     * @param userId
+     *            the ID of the user
+     * @param page
+     *            the page number (default 0)
+     * @param size
+     *            the page size (default 10)
+     * @param sortBy
+     *            the field to sort by (default transactionDate)
      * @return ResponseEntity with Page of TransactionResponse and HTTP 200 status
      */
     @GetMapping("/transactions")
-    @Operation(
-            summary = "View transactions",
-            description = "Retrieves transaction history for a user with pagination")
-    public ResponseEntity<Page<TransactionResponse>> getTransactions(
-            @PathVariable @Positive(message = "User ID must be positive") Long userId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "transactionDate") String sortBy) {
+    @Operation(summary = "View transactions", description = "Retrieves transaction history for a user with pagination")
+    public ResponseEntity<Page<TransactionResponse>> getTransactions(@PathVariable @Positive(message = "User ID must be positive") Long userId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "transactionDate") String sortBy) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, sortBy));
-        Page<TransactionResponse> transactions =
-                transactionService.getUserTransactions(userId, pageable);
+        Page<TransactionResponse> transactions = transactionService.getUserTransactions(userId, pageable);
         return ResponseEntity.ok(transactions);
     }
 }

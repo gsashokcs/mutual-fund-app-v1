@@ -7,8 +7,7 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 /**
- * Factory for retrieving transaction strategies. Implements Factory pattern to provide appropriate
- * strategy based on transaction type.
+ * Factory for retrieving transaction strategies. Implements Factory pattern to provide appropriate strategy based on transaction type.
  */
 @Component
 public class TransactionStrategyFactory {
@@ -18,7 +17,8 @@ public class TransactionStrategyFactory {
     /**
      * Constructor that registers all available transaction strategies.
      *
-     * @param strategyList list of all transaction strategy implementations
+     * @param strategyList
+     *            list of all transaction strategy implementations
      */
     public TransactionStrategyFactory(List<ITransactionStrategy> strategyList) {
         for (ITransactionStrategy strategy : strategyList) {
@@ -29,9 +29,11 @@ public class TransactionStrategyFactory {
     /**
      * Gets the appropriate strategy for the given transaction type.
      *
-     * @param transactionType the type of transaction (BUY, REDEEM)
+     * @param transactionType
+     *            the type of transaction (BUY, REDEEM)
      * @return the corresponding transaction strategy
-     * @throws IllegalArgumentException if transaction type is not supported
+     * @throws IllegalArgumentException
+     *             if transaction type is not supported
      */
     public ITransactionStrategy getStrategy(String transactionType) {
         ITransactionStrategy strategy = strategies.get(transactionType);

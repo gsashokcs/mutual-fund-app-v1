@@ -13,7 +13,8 @@ public interface MutualFundRepository extends JpaRepository<MutualFund, Long> {
     /**
      * Finds a mutual fund by name.
      *
-     * @param name the name of the mutual fund
+     * @param name
+     *            the name of the mutual fund
      * @return Optional containing the mutual fund if found
      */
     Optional<MutualFund> findByName(String name);

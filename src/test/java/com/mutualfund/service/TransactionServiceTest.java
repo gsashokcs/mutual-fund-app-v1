@@ -30,19 +30,26 @@ import com.mutualfund.service.strategy.TransactionStrategyFactory;
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceTest {
 
-    @Mock private TransactionRepository transactionRepository;
+    @Mock
+    private TransactionRepository transactionRepository;
 
-    @Mock private HoldingRepository holdingRepository;
+    @Mock
+    private HoldingRepository holdingRepository;
 
-    @Mock private MutualFundService mutualFundService;
+    @Mock
+    private MutualFundService mutualFundService;
 
-    @Mock private NavRepository navRepository;
+    @Mock
+    private NavRepository navRepository;
 
-    @Mock private TransactionStrategyFactory strategyFactory;
+    @Mock
+    private TransactionStrategyFactory strategyFactory;
 
-    @Mock private SecurityService securityService;
+    @Mock
+    private SecurityService securityService;
 
-    @InjectMocks private TransactionService transactionService;
+    @InjectMocks
+    private TransactionService transactionService;
 
     private MutualFund testFund;
     private Nav testNav;
@@ -84,12 +91,10 @@ class TransactionServiceTest {
 
         doNothing().when(securityService).validateUserAccess(1L);
         when(mutualFundService.getCurrentMutualFund(1L)).thenReturn(testFund);
-        when(navRepository.findTopByFundIdAndDeletedFalseOrderByNavDateDesc(1L))
-                .thenReturn(Optional.of(testNav));
+        when(navRepository.findTopByFundIdAndDeletedFalseOrderByNavDateDesc(1L)).thenReturn(Optional.of(testNav));
         when(transactionRepository.save(any(Transaction.class))).thenReturn(testTransaction);
         when(holdingRepository.findByUserIdAndFundId(1L, 1L)).thenReturn(Optional.empty());
-        when(strategyFactory.getStrategy("BUY"))
-                .thenReturn(mock(com.mutualfund.service.strategy.ITransactionStrategy.class));
+        when(strategyFactory.getStrategy("BUY")).thenReturn(mock(com.mutualfund.service.strategy.ITransactionStrategy.class));
         when(holdingRepository.save(any(Holding.class))).thenReturn(testHolding);
 
         TransactionResponse response = transactionService.buyUnits(1L, request);
@@ -107,12 +112,10 @@ class TransactionServiceTest {
 
         doNothing().when(securityService).validateUserAccess(1L);
         when(mutualFundService.getCurrentMutualFund(1L)).thenReturn(testFund);
-        when(navRepository.findTopByFundIdAndDeletedFalseOrderByNavDateDesc(1L))
-                .thenReturn(Optional.of(testNav));
+        when(navRepository.findTopByFundIdAndDeletedFalseOrderByNavDateDesc(1L)).thenReturn(Optional.of(testNav));
         when(holdingRepository.findByUserIdAndFundId(1L, 1L)).thenReturn(Optional.of(testHolding));
         when(transactionRepository.save(any(Transaction.class))).thenReturn(testTransaction);
-        when(strategyFactory.getStrategy("REDEEM"))
-                .thenReturn(mock(com.mutualfund.service.strategy.ITransactionStrategy.class));
+        when(strategyFactory.getStrategy("REDEEM")).thenReturn(mock(com.mutualfund.service.strategy.ITransactionStrategy.class));
         when(holdingRepository.save(any(Holding.class))).thenReturn(testHolding);
 
         TransactionResponse response = transactionService.redeemUnits(1L, request);
@@ -128,8 +131,7 @@ class TransactionServiceTest {
 
         doNothing().when(securityService).validateUserAccess(1L);
         when(mutualFundService.getCurrentMutualFund(1L)).thenReturn(testFund);
-        when(navRepository.findTopByFundIdAndDeletedFalseOrderByNavDateDesc(1L))
-                .thenReturn(Optional.of(testNav));
+        when(navRepository.findTopByFundIdAndDeletedFalseOrderByNavDateDesc(1L)).thenReturn(Optional.of(testNav));
         when(holdingRepository.findByUserIdAndFundId(1L, 1L)).thenReturn(Optional.empty());
 
         assertThrows(BusinessException.class, () -> transactionService.redeemUnits(1L, request));
@@ -142,8 +144,7 @@ class TransactionServiceTest {
 
         doNothing().when(securityService).validateUserAccess(1L);
         when(mutualFundService.getCurrentMutualFund(1L)).thenReturn(testFund);
-        when(navRepository.findTopByFundIdAndDeletedFalseOrderByNavDateDesc(1L))
-                .thenReturn(Optional.of(testNav));
+        when(navRepository.findTopByFundIdAndDeletedFalseOrderByNavDateDesc(1L)).thenReturn(Optional.of(testNav));
         when(holdingRepository.findByUserIdAndFundId(1L, 1L)).thenReturn(Optional.of(testHolding));
 
         assertThrows(BusinessException.class, () -> transactionService.redeemUnits(1L, request));

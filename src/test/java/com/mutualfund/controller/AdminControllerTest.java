@@ -38,13 +38,17 @@ import com.mutualfund.service.UserService;
 @Disabled("Controller tests disabled")
 class AdminControllerTest {
 
-    @Autowired private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-    @Autowired private ObjectMapper objectMapper;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    @MockitoBean private MutualFundService mutualFundService;
+    @MockitoBean
+    private MutualFundService mutualFundService;
 
-    @MockitoBean private UserService userService;
+    @MockitoBean
+    private UserService userService;
 
     private MutualFund testFund;
     private Nav testNav;
@@ -88,29 +92,16 @@ class AdminControllerTest {
     @Test
     @WithMockUser(username = "user", roles = "USER")
     void addMutualFundForbiddenNonAdmin() throws Exception {
-        mockMvc.perform(
-                        post("/api/v1/admin/funds")
-                                .with(csrf())
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(fundRequest)))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/v1/admin/funds").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(fundRequest))).andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
     void updateNavSuccess() throws Exception {
-        NavUpdateRequest navRequest =
-                new NavUpdateRequest(new BigDecimal("120.00"), LocalDate.now());
-        when(mutualFundService.updateNav(anyLong(), any(NavUpdateRequest.class)))
-                .thenReturn(testNav);
+        NavUpdateRequest navRequest = new NavUpdateRequest(new BigDecimal("120.00"), LocalDate.now());
+        when(mutualFundService.updateNav(anyLong(), any(NavUpdateRequest.class))).thenReturn(testNav);
 
-        mockMvc.perform(
-                        put("/api/v1/admin/funds/1/nav")
-                                .with(csrf())
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(navRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.fundId").value(1));
+        mockMvc.perform(put("/api/v1/admin/funds/1/nav").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(navRequest))).andExpect(status().isOk()).andExpect(jsonPath("$.fundId").value(1));
     }
 
     @Test
@@ -119,10 +110,7 @@ class AdminControllerTest {
         List<MutualFund> funds = Arrays.asList(testFund);
         when(mutualFundService.getAllMutualFunds()).thenReturn(funds);
 
-        mockMvc.perform(get("/api/v1/admin/funds"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].fundId").value(1))
-                .andExpect(jsonPath("$[0].name").value("Test Fund"));
+        mockMvc.perform(get("/api/v1/admin/funds")).andExpect(status().isOk()).andExpect(jsonPath("$[0].fundId").value(1)).andExpect(jsonPath("$[0].name").value("Test Fund"));
     }
 
     @Test
@@ -130,8 +118,7 @@ class AdminControllerTest {
     void deleteMutualFundSuccess() throws Exception {
         doNothing().when(mutualFundService).deleteMutualFund(1L);
 
-        mockMvc.perform(delete("/api/v1/admin/funds/1").with(csrf()))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/v1/admin/funds/1").with(csrf())).andExpect(status().isNoContent());
     }
 
     @Test
@@ -140,10 +127,7 @@ class AdminControllerTest {
         List<UserResponse> users = Arrays.asList(userResponse);
         when(userService.getAllUsers()).thenReturn(users);
 
-        mockMvc.perform(get("/api/v1/admin/users"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].username").value("testuser"));
+        mockMvc.perform(get("/api/v1/admin/users")).andExpect(status().isOk()).andExpect(jsonPath("$[0].id").value(1)).andExpect(jsonPath("$[0].username").value("testuser"));
     }
 
     @Test
@@ -151,7 +135,6 @@ class AdminControllerTest {
     void deleteUserSuccess() throws Exception {
         doNothing().when(userService).deleteUser(1L);
 
-        mockMvc.perform(delete("/api/v1/admin/users/1").with(csrf()))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/v1/admin/users/1").with(csrf())).andExpect(status().isNoContent());
     }
 }

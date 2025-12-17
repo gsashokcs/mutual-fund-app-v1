@@ -13,8 +13,7 @@ import com.mutualfund.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Service for handling security and authorization checks. Validates user ownership and role-based
- * access control.
+ * Service for handling security and authorization checks. Validates user ownership and role-based access control.
  *
  * @author Mutual Fund Management System
  * @version 1.0
@@ -26,11 +25,12 @@ public class SecurityService {
     private final UserRepository userRepository;
 
     /**
-     * Validates that the authenticated user can access resources for the given userId. Admin users
-     * can access any user's resources. Regular users can only access their own resources.
+     * Validates that the authenticated user can access resources for the given userId. Admin users can access any user's resources. Regular users can only access their own resources.
      *
-     * @param userId the ID of the user whose resources are being accessed
-     * @throws BusinessException if access is denied
+     * @param userId
+     *            the ID of the user whose resources are being accessed
+     * @throws BusinessException
+     *             if access is denied
      */
     public void validateUserAccess(Long userId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -42,10 +42,7 @@ public class SecurityService {
         }
 
         // Get the authenticated user's ID
-        User authenticatedUser =
-                userRepository
-                        .findByUsername(username)
-                        .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        User authenticatedUser = userRepository.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         // Check if the authenticated user is accessing their own data
         if (!authenticatedUser.getId().equals(userId)) {
@@ -54,11 +51,12 @@ public class SecurityService {
     }
 
     /**
-     * Validates that the authenticated user can access resources for the given username. Admin
-     * users can access any user's resources. Regular users can only access their own resources.
+     * Validates that the authenticated user can access resources for the given username. Admin users can access any user's resources. Regular users can only access their own resources.
      *
-     * @param username the username of the user whose resources are being accessed
-     * @throws BusinessException if access is denied
+     * @param username
+     *            the username of the user whose resources are being accessed
+     * @throws BusinessException
+     *             if access is denied
      */
     public void validateUserAccessByUsername(String username) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -89,13 +87,12 @@ public class SecurityService {
      * Gets the currently authenticated user.
      *
      * @return the authenticated User entity
-     * @throws BusinessException if user is not found
+     * @throws BusinessException
+     *             if user is not found
      */
     public User getAuthenticatedUser() {
         String username = getAuthenticatedUsername();
-        return userRepository
-                .findByUsername(username)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        return userRepository.findByUsername(username).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
     }
 
     /**

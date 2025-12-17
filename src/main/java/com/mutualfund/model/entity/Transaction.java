@@ -56,8 +56,7 @@ public class Transaction {
     }
 
     public enum TransactionType {
-        BUY,
-        REDEEM
+        BUY, REDEEM
     }
 
     @ManyToOne(fetch = FetchType.LAZY)

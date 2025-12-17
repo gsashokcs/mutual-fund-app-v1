@@ -25,9 +25,6 @@ public class NavUpdateRequest {
     private BigDecimal nav;
 
     @NotNull(message = "NAV date is required")
-    @Schema(
-            description = "Date of the NAV value (YYYY-MM-DD)",
-            example = "2025-12-16",
-            required = true)
+    @Schema(description = "Date of the NAV value (YYYY-MM-DD)", example = "2025-12-16", required = true)
     private LocalDate navDate;
 }

@@ -24,9 +24,6 @@ public class AdminUserCreationRequest {
     private String password;
 
     @NotBlank(message = "Role is required")
-    @Pattern(
-            regexp = "USER|ADMIN",
-            message = "Role must be either USER or ADMIN",
-            flags = Pattern.Flag.CASE_INSENSITIVE)
+    @Pattern(regexp = "USER|ADMIN", message = "Role must be either USER or ADMIN", flags = Pattern.Flag.CASE_INSENSITIVE)
     private String role;
 }

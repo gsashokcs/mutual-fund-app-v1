@@ -10,8 +10,7 @@ import org.springframework.stereotype.Repository;
 import com.mutualfund.model.entity.Nav;
 
 /**
- * Repository interface for Nav entity operations. Provides methods to access and manage NAV history
- * data.
+ * Repository interface for Nav entity operations. Provides methods to access and manage NAV history data.
  *
  * @author Mutual Fund Management System
  * @version 1.0
@@ -22,8 +21,10 @@ public interface NavRepository extends JpaRepository<Nav, Long> {
     /**
      * Finds a NAV entry by fund ID and date.
      *
-     * @param fundId the ID of the mutual fund
-     * @param navDate the NAV date
+     * @param fundId
+     *            the ID of the mutual fund
+     * @param navDate
+     *            the NAV date
      * @return Optional containing the Nav if found
      */
     Optional<Nav> findByFundIdAndNavDateAndDeletedFalse(Long fundId, LocalDate navDate);
@@ -31,7 +32,8 @@ public interface NavRepository extends JpaRepository<Nav, Long> {
     /**
      * Finds all NAV entries for a specific fund.
      *
-     * @param fundId the ID of the mutual fund
+     * @param fundId
+     *            the ID of the mutual fund
      * @return List of Nav entries
      */
     List<Nav> findByFundIdAndDeletedFalseOrderByNavDateDesc(Long fundId);
@@ -39,7 +41,8 @@ public interface NavRepository extends JpaRepository<Nav, Long> {
     /**
      * Finds the latest NAV entry for a specific fund.
      *
-     * @param fundId the ID of the mutual fund
+     * @param fundId
+     *            the ID of the mutual fund
      * @return Optional containing the latest Nav if found
      */
     Optional<Nav> findTopByFundIdAndDeletedFalseOrderByNavDateDesc(Long fundId);
@@ -47,7 +50,8 @@ public interface NavRepository extends JpaRepository<Nav, Long> {
     /**
      * Soft deletes all NAV entries for a specific fund.
      *
-     * @param fundId the ID of the mutual fund
+     * @param fundId
+     *            the ID of the mutual fund
      * @return number of entries updated
      */
     List<Nav> findByFundIdAndDeletedFalse(Long fundId);

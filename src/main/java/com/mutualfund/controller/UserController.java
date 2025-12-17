@@ -28,15 +28,13 @@ public class UserController {
     /**
      * Registers a new user account.
      *
-     * @param request the user registration request with username and password
+     * @param request
+     *            the user registration request with username and password
      * @return ResponseEntity with UserResponse and HTTP 201 status
      */
     @PostMapping("/register")
-    @Operation(
-            summary = "Register a new user",
-            description = "Creates a new user account with USER role")
-    public ResponseEntity<UserResponse> registerUser(
-            @Valid @RequestBody UserRegistrationRequest request) {
+    @Operation(summary = "Register a new user", description = "Creates a new user account with USER role")
+    public ResponseEntity<UserResponse> registerUser(@Valid @RequestBody UserRegistrationRequest request) {
         UserResponse response = userService.registerUser(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -44,14 +42,13 @@ public class UserController {
     /**
      * Retrieves a user's profile by their username.
      *
-     * @param username the username of the user to retrieve
+     * @param username
+     *            the username of the user to retrieve
      * @return ResponseEntity with UserResponse and HTTP 200 status
      */
     @GetMapping("/{username}")
     @SecurityRequirement(name = "basicAuth")
-    @Operation(
-            summary = "Get user profile",
-            description = "Retrieves user profile information by username")
+    @Operation(summary = "Get user profile", description = "Retrieves user profile information by username")
     public ResponseEntity<UserResponse> getUserProfile(@PathVariable String username) {
         UserResponse response = userService.getUserByUsername(username);
         return ResponseEntity.ok(response);
