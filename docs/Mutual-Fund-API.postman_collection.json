@@ -435,7 +435,7 @@
 								"{{fundId}}"
 							]
 						},
-						"description": "Remove a mutual fund from the system (Admin only). All associated NAV entries are soft-deleted for audit purposes before the fund is removed."}
+						"description": "Remove a mutual fund from the system (Admin only). All associated NAV entries are soft-deleted for audit purposes before the fund is removed."
 					},
 					"response": []
 				},
