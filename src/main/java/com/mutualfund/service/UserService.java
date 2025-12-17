@@ -81,7 +81,7 @@ public class UserService implements IUserService {
             role = User.Role.valueOf(request.getRole().toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new BusinessException(
-                    ErrorCode.INVALID_INPUT, "Invalid role: " + request.getRole());
+                    ErrorCode.VALIDATION_ERROR, "Invalid role: " + request.getRole());
         }
 
         User user =

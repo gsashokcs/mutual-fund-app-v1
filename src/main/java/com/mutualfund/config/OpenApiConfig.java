@@ -21,7 +21,7 @@ public class OpenApiConfig {
                                 .title("Mutual Fund Management System API")
                                 .version("1.0.0")
                                 .description(
-                                        "RESTful API for managing mutual funds with user authentication and admin operations")
+                                        "RESTful API for managing mutual funds with user authentication, role-based access control, and historical NAV tracking. NAV values are managed separately from fund metadata for comprehensive historical analysis.")
                                 .contact(
                                         new Contact()
                                                 .name("Mutual Fund Team")

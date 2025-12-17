@@ -31,6 +31,7 @@ public class TransactionService implements ITransactionService {
     private final TransactionRepository transactionRepository;
     private final HoldingRepository holdingRepository;
     private final MutualFundService mutualFundService;
+    private final com.mutualfund.repository.NavRepository navRepository;
     private final com.mutualfund.service.strategy.TransactionStrategyFactory strategyFactory;
     private final SecurityService securityService;
 
@@ -56,18 +57,30 @@ public class TransactionService implements ITransactionService {
 
         MutualFund fund = mutualFundService.getCurrentMutualFund(request.getFundId());
 
+        // Get latest NAV for the fund
+        com.mutualfund.model.entity.Nav latestNav =
+                navRepository
+                        .findTopByFundIdAndDeletedFalseOrderByNavDateDesc(request.getFundId())
+                        .orElseThrow(
+                                () ->
+                                        new BusinessException(
+                                                ErrorCode.NAV_UPDATE_FAILED,
+                                                "NAV not found for fund ID: "
+                                                        + request.getFundId()));
+
         Transaction transaction =
                 Transaction.builder()
                         .userId(userId)
                         .fundId(request.getFundId())
                         .units(request.getUnits())
-                        .nav(fund.getNav())
+                        .nav(latestNav.getNav())
                         .type(Transaction.TransactionType.BUY)
                         .build();
 
         Transaction savedTransaction = transactionRepository.save(transaction);
 
-        processHoldingUpdate(userId, request.getFundId(), request.getUnits(), fund.getNav(), "BUY");
+        processHoldingUpdate(
+                userId, request.getFundId(), request.getUnits(), latestNav.getNav(), "BUY");
 
         log.info("Buy transaction completed successfully: {}", savedTransaction.getTransactionId());
         return mapToTransactionResponse(savedTransaction, fund.getName());
@@ -96,6 +109,17 @@ public class TransactionService implements ITransactionService {
 
         MutualFund fund = mutualFundService.getCurrentMutualFund(request.getFundId());
 
+        // Get latest NAV for the fund
+        com.mutualfund.model.entity.Nav latestNav =
+                navRepository
+                        .findTopByFundIdAndDeletedFalseOrderByNavDateDesc(request.getFundId())
+                        .orElseThrow(
+                                () ->
+                                        new BusinessException(
+                                                ErrorCode.NAV_UPDATE_FAILED,
+                                                "NAV not found for fund ID: "
+                                                        + request.getFundId()));
+
         Holding holding =
                 holdingRepository
                         .findByUserIdAndFundId(userId, request.getFundId())
@@ -116,14 +140,14 @@ public class TransactionService implements ITransactionService {
                         .userId(userId)
                         .fundId(request.getFundId())
                         .units(request.getUnits())
-                        .nav(fund.getNav())
+                        .nav(latestNav.getNav())
                         .type(Transaction.TransactionType.REDEEM)
                         .build();
 
         Transaction savedTransaction = transactionRepository.save(transaction);
 
         processHoldingUpdate(
-                userId, request.getFundId(), request.getUnits(), fund.getNav(), "REDEEM");
+                userId, request.getFundId(), request.getUnits(), latestNav.getNav(), "REDEEM");
 
         log.info(
                 "Redeem transaction completed successfully: {}",
@@ -243,14 +267,26 @@ public class TransactionService implements ITransactionService {
 
     private HoldingResponse mapToHoldingResponse(Holding holding) {
         MutualFund currentFund = mutualFundService.getCurrentMutualFund(holding.getFundId());
+
+        // Get latest NAV for the fund
+        com.mutualfund.model.entity.Nav latestNav =
+                navRepository
+                        .findTopByFundIdAndDeletedFalseOrderByNavDateDesc(holding.getFundId())
+                        .orElseThrow(
+                                () ->
+                                        new BusinessException(
+                                                ErrorCode.NAV_UPDATE_FAILED,
+                                                "NAV not found for fund ID: "
+                                                        + holding.getFundId()));
+
         BigDecimal currentValue =
-                holding.getUnits().multiply(currentFund.getNav()).setScale(2, RoundingMode.HALF_UP);
+                holding.getUnits().multiply(latestNav.getNav()).setScale(2, RoundingMode.HALF_UP);
 
         return HoldingResponse.builder()
                 .fundId(holding.getFundId())
                 .fundName(currentFund.getName())
                 .units(holding.getUnits())
-                .currentNav(currentFund.getNav())
+                .currentNav(latestNav.getNav())
                 .totalValue(currentValue)
                 .build();
     }

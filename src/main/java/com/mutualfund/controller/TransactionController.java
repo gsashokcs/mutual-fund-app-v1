@@ -44,7 +44,8 @@ public class TransactionController {
     @PostMapping("/buy")
     @Operation(
             summary = "Buy units",
-            description = "Purchases mutual fund units at current day's NAV")
+            description =
+                    "Purchases mutual fund units at the latest available NAV. The system fetches the most recent NAV from the historical NAV table for the specified fund.")
     public ResponseEntity<TransactionResponse> buyUnits(
             @PathVariable @Positive(message = "User ID must be positive") Long userId,
             @Valid @RequestBody TransactionRequest request) {
@@ -62,7 +63,8 @@ public class TransactionController {
     @PostMapping("/redeem")
     @Operation(
             summary = "Redeem units",
-            description = "Redeems mutual fund units at current day's NAV")
+            description =
+                    "Redeems mutual fund units at the latest available NAV. The system fetches the most recent NAV from the historical NAV table for the specified fund. Validates sufficient units before processing.")
     public ResponseEntity<TransactionResponse> redeemUnits(
             @PathVariable @Positive(message = "User ID must be positive") Long userId,
             @Valid @RequestBody TransactionRequest request) {
@@ -79,7 +81,8 @@ public class TransactionController {
     @GetMapping("/holdings")
     @Operation(
             summary = "View holdings",
-            description = "Retrieves all mutual fund holdings for a user with current values")
+            description =
+                    "Retrieves all mutual fund holdings for a user with current market values calculated using the latest NAV from the historical NAV table.")
     public ResponseEntity<List<HoldingResponse>> getHoldings(
             @PathVariable @Positive(message = "User ID must be positive") Long userId) {
         List<HoldingResponse> holdings = transactionService.getUserHoldings(userId);

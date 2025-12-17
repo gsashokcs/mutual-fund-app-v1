@@ -19,7 +19,7 @@ A comprehensive RESTful API for managing mutual funds with user authentication, 
 
 ## Overview
 
-The Mutual Fund Management System is a Spring Boot application that provides a complete solution for managing mutual fund investments. It supports user registration, fund transactions (buy/redeem), portfolio holdings tracking, and administrative operations for managing funds and users.
+The Mutual Fund Management System is a Spring Boot application that provides a complete solution for managing mutual fund investments. It supports user registration, fund transactions (buy/redeem), portfolio holdings tracking, historical NAV tracking, and administrative operations for managing funds and users. NAV values are managed separately from fund metadata for comprehensive historical analysis and audit trails.
 
 ## Features
 
@@ -35,10 +35,12 @@ The Mutual Fund Management System is a Spring Boot application that provides a c
   - Real-time portfolio holdings with current valuations
 
 - **Admin Operations**
-  - Add and manage mutual funds
-  - Update NAV (Net Asset Value)
+  - Add and manage mutual funds (metadata only)
+  - Update or create NAV (Net Asset Value) for specific dates
+  - Historical NAV tracking with date-based entries
   - View and manage all users
-  - Delete funds and users
+  - Create users with specific roles (USER/ADMIN)
+  - Delete funds with automatic NAV soft-delete
 
 - **Additional Features**
   - Caching for improved performance
@@ -77,15 +79,15 @@ The Mutual Fund Management System is a Spring Boot application that provides a c
          │ 1
          │
          │ *
-┌────────┴────────┐         ┌──────────────────┐
-│   HOLDINGS      │    *    │  MUTUAL_FUNDS    │
-├─────────────────┤────────┼──────────────────┤
-│ id (PK)         │    1    │ fund_id (PK)     │
-│ user_id (FK)    │         │ name             │
-│ fund_id (FK)    │         │ nav              │
-│ units           │         │ nav_date         │
-│ total_value     │         └──────┬───────────┘
-└────────┬────────┘                │
+┌────────┴────────┐         ┌──────────────────┐         ┌──────────────────┐
+│   HOLDINGS      │    *    │  MUTUAL_FUNDS    │    1    │   NAV_HISTORY    │
+├─────────────────┤────────┼──────────────────┤────────┼──────────────────┤
+│ id (PK)         │    1    │ fund_id (PK)     │    *    │ nav_id (PK)      │
+│ user_id (FK)    │         │ name (UK)        │         │ fund_id (FK)     │
+│ fund_id (FK)    │         └──────┬───────────┘         │ nav              │
+│ units           │                │                     │ nav_date         │
+│ total_value     │                │                     │ deleted          │
+└────────┬────────┘                │                     └──────────────────┘
          │                          │
          │ 1                        │ 1
          │                          │
@@ -126,29 +128,59 @@ Stores user information for authentication and authorization.
 
 #### 2. MUTUAL_FUNDS
 
-Stores mutual fund information with daily NAV values.
+Stores mutual fund metadata. NAV values are managed separately in the NAV_HISTORY table.
 
 | Column    | Type           | Constraints                         | Description                    |
 |-----------|----------------|-------------------------------------|--------------------------------|
 | fund_id   | BIGINT         | PRIMARY KEY, AUTO_INCREMENT         | Unique fund identifier         |
-| name      | VARCHAR(255)   | NOT NULL                            | Fund name                      |
-| nav       | DECIMAL(10,2)  | NOT NULL, CHECK (nav > 0)           | Net Asset Value per unit       |
-| nav_date  | DATE           | NOT NULL                            | Date of NAV valuation          |
+| name      | VARCHAR(255)   | UNIQUE, NOT NULL                    | Fund name                      |
 
 **Indexes:**
 - PRIMARY KEY: `fund_id`
-- UNIQUE INDEX: `(name, nav_date)` - Ensures one NAV per fund per day
+- UNIQUE INDEX: `name` - Ensures unique fund names
 
 **JPA Entity:** `MutualFund.java`
 
 **Business Rules:**
-- A fund can have only one NAV entry per date
-- NAV must be positive (> 0.01)
-- Historical NAV records are maintained
+- Fund names must be unique
+- NAV values are managed separately in NAV_HISTORY table
+- Fund metadata is decoupled from NAV data for better normalization
 
 ---
 
-#### 3. HOLDINGS
+#### 3. NAV_HISTORY
+
+Stores historical Net Asset Value (NAV) entries for mutual funds with soft delete support.
+
+| Column    | Type           | Constraints                                    | Description                    |
+|-----------|----------------|------------------------------------------------|--------------------------------|
+| nav_id    | BIGINT         | PRIMARY KEY, AUTO_INCREMENT                    | Unique NAV entry identifier    |
+| fund_id   | BIGINT         | FOREIGN KEY → mutual_funds(fund_id), NOT NULL  | Reference to mutual fund       |
+| nav       | DECIMAL(10,2)  | NOT NULL, CHECK (nav > 0.01)                   | Net Asset Value per unit       |
+| nav_date  | DATE           | NOT NULL                                       | Date of NAV valuation          |
+| deleted   | BOOLEAN        | NOT NULL, DEFAULT false                        | Soft delete flag               |
+
+**Indexes:**
+- PRIMARY KEY: `nav_id`
+- UNIQUE INDEX: `(fund_id, nav_date)` - Ensures one NAV per fund per date
+- INDEX: `fund_id` - For efficient fund NAV queries
+- INDEX: `nav_date` - For date-based queries
+
+**Foreign Keys:**
+- `fund_id` → `mutual_funds(fund_id)`
+
+**JPA Entity:** `Nav.java`
+
+**Business Rules:**
+- One NAV entry per fund per date (unique constraint)
+- NAV must be positive (> 0.01)
+- Soft delete for audit trail (deleted flag)
+- Historical NAV records preserved for analysis
+- Latest NAV fetched using `findTopByFundIdAndDeletedFalseOrderByNavDateDesc`
+
+---
+
+#### 4. HOLDINGS
 
 Tracks current fund holdings for each user.
 
@@ -178,7 +210,7 @@ Tracks current fund holdings for each user.
 
 ---
 
-#### 4. TRANSACTIONS
+#### 5. TRANSACTIONS
 
 Records all buy and redeem transactions.
 
@@ -226,12 +258,17 @@ Records all buy and redeem transactions.
    - Mapped via: `users.id` → `transactions.user_id`
    - Fetch: `LAZY`
 
-3. **MutualFund → Holdings** (1:N)
+3. **MutualFund → NAV** (1:N)
+   - One fund can have multiple NAV entries (historical tracking)
+   - Mapped via: `mutual_funds.fund_id` → `nav_history.fund_id`
+   - Fetch: `LAZY`
+
+4. **MutualFund → Holdings** (1:N)
    - One fund can be held by multiple users
    - Mapped via: `mutual_funds.fund_id` → `holdings.fund_id`
    - Fetch: `LAZY`
 
-4. **MutualFund → Transactions** (1:N)
+5. **MutualFund → Transactions** (1:N)
    - One fund can have multiple transactions
    - Mapped via: `mutual_funds.fund_id` → `transactions.fund_id`
    - Fetch: `LAZY`
@@ -257,7 +294,10 @@ Records all buy and redeem transactions.
 | Primary Key            | users         | id                                       |
 | Unique                 | users         | username                                 |
 | Primary Key            | mutual_funds  | fund_id                                  |
-| Unique                 | mutual_funds  | (name, nav_date)                         |
+| Unique                 | mutual_funds  | name                                     |
+| Primary Key            | nav_history   | nav_id                                   |
+| Unique                 | nav_history   | (fund_id, nav_date)                      |
+| Foreign Key            | nav_history   | fund_id → mutual_funds(fund_id)          |
 | Primary Key            | holdings      | id                                       |
 | Unique                 | holdings      | (user_id, fund_id)                       |
 | Foreign Key            | holdings      | user_id → users(id)                      |
@@ -265,7 +305,7 @@ Records all buy and redeem transactions.
 | Primary Key            | transactions  | transaction_id                           |
 | Foreign Key            | transactions  | user_id → users(id)                      |
 | Foreign Key            | transactions  | fund_id → mutual_funds(fund_id)          |
-| Check                  | mutual_funds  | nav > 0                                  |
+| Check                  | nav_history   | nav > 0.01                               |
 | Check                  | holdings      | units >= 0, total_value >= 0             |
 | Check                  | transactions  | units > 0, nav > 0                       |
 | Check                  | transactions  | type IN ('BUY', 'REDEEM')                |
@@ -278,10 +318,15 @@ INSERT INTO users (username, password, role)
 VALUES ('john_doe', '$2a$10$...', 'USER');
 ```
 
-#### 2. Admin Adds Mutual Fund
+#### 2. Admin Adds Mutual Fund (Metadata Only)
 ```sql
-INSERT INTO mutual_funds (name, nav, nav_date) 
-VALUES ('ABC Growth Fund', 150.50, '2025-12-16');
+-- Create fund without NAV
+INSERT INTO mutual_funds (name) 
+VALUES ('ABC Growth Fund');
+
+-- Add NAV separately with date
+INSERT INTO nav_history (fund_id, nav, nav_date, deleted)
+VALUES (1, 150.50, '2025-12-16', false);
 ```
 
 #### 3. User Buys Units
@@ -484,10 +529,10 @@ Import the Postman collection for easy API testing:
 - `GET /api/v1/users/{userId}/transactions` - View transaction history
 
 #### Admin Operations (ADMIN role required)
-- `POST /api/v1/admin/funds` - Add new mutual fund (without NAV)
-- `PUT /api/v1/admin/funds/{fundId}/nav` - Update or create fund NAV for specific date
-- `GET /api/v1/admin/funds` - List all funds with pagination
-- `DELETE /api/v1/admin/funds/{fundId}` - Delete fund
+- `POST /api/v1/admin/funds` - Add new mutual fund (metadata only, NAV managed separately)
+- `PUT /api/v1/admin/funds/{fundId}/nav` - Update or create fund NAV for specific date (historical tracking)
+- `GET /api/v1/admin/funds` - List all funds with pagination (metadata only)
+- `DELETE /api/v1/admin/funds/{fundId}` - Delete fund (soft-deletes all NAV entries first)
 - `POST /api/v1/admin/users` - Create new user with specified role (USER or ADMIN)
 - `GET /api/v1/admin/users` - List all users with pagination
 - `DELETE /api/v1/admin/users/{userId}` - Delete user
@@ -680,8 +725,8 @@ mutual-fund-app-v1/
 │   │   │   ├── controller/       # REST controllers
 │   │   │   ├── exception/        # Exception handling
 │   │   │   ├── model/
-│   │   │   │   ├── entity/       # JPA entities
-│   │   │   │   ├── request/      # Request DTOs
+│   │   │   │   ├── entity/       # JPA entities (User, MutualFund, Nav, Holding, Transaction)
+│   │   │   │   ├── request/      # Request DTOs (NavUpdateRequest, etc.)
 │   │   │   │   └── response/     # Response DTOs
 │   │   │   ├── repository/       # Data repositories
 │   │   │   ├── service/          # Business logic
@@ -829,8 +874,8 @@ Admins can access any user's transaction data through the security bypass.
 | `POST /api/v1/users/{userId}/redeem` | Authenticated + Ownership | Redeem own units |
 | `GET /api/v1/users/{userId}/holdings` | Authenticated + Ownership | View own holdings |
 | `GET /api/v1/users/{userId}/transactions` | Authenticated + Ownership | View own transactions |
-| `POST /api/v1/admin/funds` | ADMIN only | Add mutual fund (NAV managed separately) |
-| `PUT /api/v1/admin/funds/{id}/nav` | ADMIN only | Update/create NAV for specific date |
+| `POST /api/v1/admin/funds` | ADMIN only | Add mutual fund metadata (NAV managed separately in NAV_HISTORY table) |
+| `PUT /api/v1/admin/funds/{id}/nav` | ADMIN only | Update/create NAV for specific date (historical tracking with soft delete) |
 | `GET /api/v1/admin/funds` | ADMIN only | List all funds |
 | `DELETE /api/v1/admin/funds/{id}` | ADMIN only | Delete fund |
 | `POST /api/v1/admin/users` | ADMIN only | Create user with role (USER/ADMIN) |

@@ -20,14 +20,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.mutualfund.exception.BusinessException;
 import com.mutualfund.exception.ResourceNotFoundException;
 import com.mutualfund.model.entity.MutualFund;
+import com.mutualfund.model.entity.Nav;
 import com.mutualfund.model.request.MutualFundRequest;
 import com.mutualfund.model.request.NavUpdateRequest;
 import com.mutualfund.repository.MutualFundRepository;
+import com.mutualfund.repository.NavRepository;
 
 @ExtendWith(MockitoExtension.class)
 class MutualFundServiceTest {
 
     @Mock private MutualFundRepository mutualFundRepository;
+    @Mock private NavRepository navRepository;
 
     @InjectMocks private MutualFundService mutualFundService;
 
@@ -39,18 +42,14 @@ class MutualFundServiceTest {
         testFund = new MutualFund();
         testFund.setFundId(1L);
         testFund.setName("Test Fund");
-        testFund.setNav(new BigDecimal("100.50"));
-        testFund.setNavDate(LocalDate.now());
 
         fundRequest = new MutualFundRequest();
         fundRequest.setName("New Fund");
-        fundRequest.setNav(new BigDecimal("150.00"));
     }
 
     @Test
     void addMutualFundSuccess() {
-        when(mutualFundRepository.findByNameAndNavDate(anyString(), any(LocalDate.class)))
-                .thenReturn(Optional.empty());
+        when(mutualFundRepository.findByName(anyString())).thenReturn(Optional.empty());
         when(mutualFundRepository.save(any(MutualFund.class))).thenReturn(testFund);
 
         MutualFund result = mutualFundService.addMutualFund(fundRequest);
@@ -62,8 +61,7 @@ class MutualFundServiceTest {
 
     @Test
     void addMutualFundAlreadyExistsThrowsException() {
-        when(mutualFundRepository.findByNameAndNavDate(anyString(), any(LocalDate.class)))
-                .thenReturn(Optional.of(testFund));
+        when(mutualFundRepository.findByName(anyString())).thenReturn(Optional.of(testFund));
 
         assertThrows(BusinessException.class, () -> mutualFundService.addMutualFund(fundRequest));
         verify(mutualFundRepository, never()).save(any(MutualFund.class));
@@ -71,22 +69,30 @@ class MutualFundServiceTest {
 
     @Test
     void updateNavSuccess() {
-        NavUpdateRequest navRequest = new NavUpdateRequest(new BigDecimal("120.00"));
-        when(mutualFundRepository.findByFundIdAndNavDate(1L, LocalDate.now()))
-                .thenReturn(Optional.of(testFund));
-        when(mutualFundRepository.save(any(MutualFund.class))).thenReturn(testFund);
+        NavUpdateRequest navRequest =
+                new NavUpdateRequest(new BigDecimal("120.00"), LocalDate.now());
+        Nav testNav = new Nav();
+        testNav.setNavId(1L);
+        testNav.setFundId(1L);
+        testNav.setNav(new BigDecimal("120.00"));
+        testNav.setNavDate(LocalDate.now());
 
-        MutualFund result = mutualFundService.updateNav(1L, navRequest);
+        when(mutualFundRepository.existsById(1L)).thenReturn(true);
+        when(navRepository.findByFundIdAndNavDateAndDeletedFalse(1L, LocalDate.now()))
+                .thenReturn(Optional.empty());
+        when(navRepository.save(any(Nav.class))).thenReturn(testNav);
+
+        Nav result = mutualFundService.updateNav(1L, navRequest);
 
         assertNotNull(result);
-        verify(mutualFundRepository).save(any(MutualFund.class));
+        verify(navRepository).save(any(Nav.class));
     }
 
     @Test
     void updateNavNotFoundThrowsException() {
-        NavUpdateRequest navRequest = new NavUpdateRequest(new BigDecimal("120.00"));
-        when(mutualFundRepository.findByFundIdAndNavDate(1L, LocalDate.now()))
-                .thenReturn(Optional.empty());
+        NavUpdateRequest navRequest =
+                new NavUpdateRequest(new BigDecimal("120.00"), LocalDate.now());
+        when(mutualFundRepository.existsById(1L)).thenReturn(false);
 
         assertThrows(
                 ResourceNotFoundException.class, () -> mutualFundService.updateNav(1L, navRequest));
@@ -106,8 +112,7 @@ class MutualFundServiceTest {
 
     @Test
     void getCurrentMutualFundSuccess() {
-        when(mutualFundRepository.findByFundIdAndNavDate(1L, LocalDate.now()))
-                .thenReturn(Optional.of(testFund));
+        when(mutualFundRepository.findById(1L)).thenReturn(Optional.of(testFund));
 
         MutualFund result = mutualFundService.getCurrentMutualFund(1L);
 
@@ -117,8 +122,7 @@ class MutualFundServiceTest {
 
     @Test
     void getCurrentMutualFundNotFoundThrowsException() {
-        when(mutualFundRepository.findByFundIdAndNavDate(1L, LocalDate.now()))
-                .thenReturn(Optional.empty());
+        when(mutualFundRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(
                 ResourceNotFoundException.class, () -> mutualFundService.getCurrentMutualFund(1L));
@@ -127,6 +131,7 @@ class MutualFundServiceTest {
     @Test
     void deleteMutualFundSuccess() {
         when(mutualFundRepository.existsById(1L)).thenReturn(true);
+        when(navRepository.findByFundIdAndDeletedFalse(1L)).thenReturn(Arrays.asList());
 
         mutualFundService.deleteMutualFund(1L);
 

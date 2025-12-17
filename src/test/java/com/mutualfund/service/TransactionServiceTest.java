@@ -18,11 +18,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.mutualfund.exception.BusinessException;
 import com.mutualfund.model.entity.Holding;
 import com.mutualfund.model.entity.MutualFund;
+import com.mutualfund.model.entity.Nav;
 import com.mutualfund.model.entity.Transaction;
 import com.mutualfund.model.request.TransactionRequest;
 import com.mutualfund.model.response.TransactionResponse;
 import com.mutualfund.repository.HoldingRepository;
+import com.mutualfund.repository.NavRepository;
 import com.mutualfund.repository.TransactionRepository;
+import com.mutualfund.service.strategy.TransactionStrategyFactory;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceTest {
@@ -33,9 +36,16 @@ class TransactionServiceTest {
 
     @Mock private MutualFundService mutualFundService;
 
+    @Mock private NavRepository navRepository;
+
+    @Mock private TransactionStrategyFactory strategyFactory;
+
+    @Mock private SecurityService securityService;
+
     @InjectMocks private TransactionService transactionService;
 
     private MutualFund testFund;
+    private Nav testNav;
     private Holding testHolding;
     private Transaction testTransaction;
 
@@ -44,8 +54,13 @@ class TransactionServiceTest {
         testFund = new MutualFund();
         testFund.setFundId(1L);
         testFund.setName("Test Fund");
-        testFund.setNav(new BigDecimal("100.00"));
-        testFund.setNavDate(LocalDate.now());
+
+        testNav = new Nav();
+        testNav.setNavId(1L);
+        testNav.setFundId(1L);
+        testNav.setNav(new BigDecimal("100.00"));
+        testNav.setNavDate(LocalDate.now());
+        testNav.setDeleted(false);
 
         testHolding = new Holding();
         testHolding.setId(1L);
@@ -67,9 +82,14 @@ class TransactionServiceTest {
     void buyUnitsSuccess() {
         TransactionRequest request = new TransactionRequest(1L, new BigDecimal("5.0000"));
 
+        doNothing().when(securityService).validateUserAccess(1L);
         when(mutualFundService.getCurrentMutualFund(1L)).thenReturn(testFund);
+        when(navRepository.findTopByFundIdAndDeletedFalseOrderByNavDateDesc(1L))
+                .thenReturn(Optional.of(testNav));
         when(transactionRepository.save(any(Transaction.class))).thenReturn(testTransaction);
         when(holdingRepository.findByUserIdAndFundId(1L, 1L)).thenReturn(Optional.empty());
+        when(strategyFactory.getStrategy("BUY"))
+                .thenReturn(mock(com.mutualfund.service.strategy.ITransactionStrategy.class));
         when(holdingRepository.save(any(Holding.class))).thenReturn(testHolding);
 
         TransactionResponse response = transactionService.buyUnits(1L, request);
@@ -85,9 +105,14 @@ class TransactionServiceTest {
     void redeemUnitsSuccess() {
         TransactionRequest request = new TransactionRequest(1L, new BigDecimal("3.0000"));
 
+        doNothing().when(securityService).validateUserAccess(1L);
         when(mutualFundService.getCurrentMutualFund(1L)).thenReturn(testFund);
+        when(navRepository.findTopByFundIdAndDeletedFalseOrderByNavDateDesc(1L))
+                .thenReturn(Optional.of(testNav));
         when(holdingRepository.findByUserIdAndFundId(1L, 1L)).thenReturn(Optional.of(testHolding));
         when(transactionRepository.save(any(Transaction.class))).thenReturn(testTransaction);
+        when(strategyFactory.getStrategy("REDEEM"))
+                .thenReturn(mock(com.mutualfund.service.strategy.ITransactionStrategy.class));
         when(holdingRepository.save(any(Holding.class))).thenReturn(testHolding);
 
         TransactionResponse response = transactionService.redeemUnits(1L, request);
@@ -101,7 +126,10 @@ class TransactionServiceTest {
     void redeemUnitsNoHoldingsThrowsException() {
         TransactionRequest request = new TransactionRequest(1L, new BigDecimal("3.0000"));
 
+        doNothing().when(securityService).validateUserAccess(1L);
         when(mutualFundService.getCurrentMutualFund(1L)).thenReturn(testFund);
+        when(navRepository.findTopByFundIdAndDeletedFalseOrderByNavDateDesc(1L))
+                .thenReturn(Optional.of(testNav));
         when(holdingRepository.findByUserIdAndFundId(1L, 1L)).thenReturn(Optional.empty());
 
         assertThrows(BusinessException.class, () -> transactionService.redeemUnits(1L, request));
@@ -112,7 +140,10 @@ class TransactionServiceTest {
     void redeemUnitsInsufficientUnitsThrowsException() {
         TransactionRequest request = new TransactionRequest(1L, new BigDecimal("15.0000"));
 
+        doNothing().when(securityService).validateUserAccess(1L);
         when(mutualFundService.getCurrentMutualFund(1L)).thenReturn(testFund);
+        when(navRepository.findTopByFundIdAndDeletedFalseOrderByNavDateDesc(1L))
+                .thenReturn(Optional.of(testNav));
         when(holdingRepository.findByUserIdAndFundId(1L, 1L)).thenReturn(Optional.of(testHolding));
 
         assertThrows(BusinessException.class, () -> transactionService.redeemUnits(1L, request));

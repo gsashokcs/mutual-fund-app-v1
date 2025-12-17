@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "mutual-fund-api-collection",
 		"name": "Mutual Fund Management API",
-		"description": "Complete API collection for Mutual Fund Management System with user authentication and admin operations",
+		"description": "Complete API collection for Mutual Fund Management System with Spring Security Basic Authentication, role-based access control (ADMIN/USER), and historical NAV tracking. NAV values are managed separately from fund metadata for comprehensive historical analysis.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"auth": {
@@ -192,7 +192,7 @@
 								"buy"
 							]
 						},
-						"description": "Purchase mutual fund units at current day's NAV"
+						"description": "Purchase mutual fund units at the latest available NAV. The system fetches the most recent NAV from the historical NAV table for the specified fund."
 					},
 					"response": []
 				},
@@ -223,7 +223,7 @@
 								"redeem"
 							]
 						},
-						"description": "Redeem mutual fund units at current day's NAV"
+						"description": "Redeem mutual fund units at the latest available NAV. The system fetches the most recent NAV from the historical NAV table for the specified fund. Validates sufficient units before processing."
 					},
 					"response": []
 				},
@@ -245,7 +245,7 @@
 								"holdings"
 							]
 						},
-						"description": "Retrieve all mutual fund holdings for a user with current values"
+						"description": "Retrieve all mutual fund holdings for a user with current market values calculated using the latest NAV from the historical NAV table."
 					},
 					"response": []
 				},
@@ -346,7 +346,7 @@
 								"funds"
 							]
 						},
-						"description": "Create a new mutual fund (Admin only). NAV should be added separately using the Update NAV endpoint."
+						"description": "Create a new mutual fund with metadata only (Admin only). NAV values are managed separately for historical tracking. Use the Update NAV endpoint to add NAV values for specific dates."
 					},
 					"response": []
 				},
@@ -378,7 +378,7 @@
 								"nav"
 							]
 						},
-						"description": "Update or create NAV for a mutual fund on a specific date (Admin only)"
+						"description": "Update or create NAV for a mutual fund on a specific date (Admin only). If NAV exists for the date, it will be updated; otherwise, a new NAV entry will be created. This enables historical NAV tracking."
 					},
 					"response": []
 				},
@@ -413,7 +413,7 @@
 								}
 							]
 						},
-						"description": "Retrieve all mutual funds with pagination (Admin only)"
+						"description": "Retrieve all mutual funds with pagination (Admin only). Returns fund metadata only; NAV values should be queried separately."
 					},
 					"response": []
 				},
@@ -435,7 +435,7 @@
 								"{{fundId}}"
 							]
 						},
-						"description": "Remove a mutual fund from the system (Admin only)"
+						"description": "Remove a mutual fund from the system (Admin only). All associated NAV entries are soft-deleted for audit purposes before the fund is removed."}
 					},
 					"response": []
 				},
@@ -542,7 +542,7 @@
 				}
 			],
 			"description": "Administrative endpoints for managing funds and users (requires ADMIN role)"
-		},
+		},		
 		{
 			"name": "Health & Monitoring",
 			"item": [

@@ -51,7 +51,7 @@ public class AdminController {
     @Operation(
             summary = "Add mutual fund",
             description =
-                    "Creates a new mutual fund. Use PUT /funds/{fundId}/nav to add NAV values.")
+                    "Creates a new mutual fund with metadata only. NAV values are managed separately for historical tracking. Use PUT /funds/{fundId}/nav to add NAV values for specific dates.")
     public ResponseEntity<MutualFund> addMutualFund(@Valid @RequestBody MutualFundRequest request) {
         MutualFund fund = mutualFundService.addMutualFund(request);
         return new ResponseEntity<>(fund, HttpStatus.CREATED);
@@ -67,7 +67,8 @@ public class AdminController {
     @PutMapping("/funds/{fundId}/nav")
     @Operation(
             summary = "Update NAV",
-            description = "Updates or creates Net Asset Value for a mutual fund on a specific date")
+            description =
+                    "Updates or creates Net Asset Value for a mutual fund on a specific date. If NAV exists for the date, it will be updated; otherwise, a new NAV entry will be created. This enables historical NAV tracking.")
     public ResponseEntity<Nav> updateNav(
             @PathVariable @Positive(message = "Fund ID must be positive") Long fundId,
             @Valid @RequestBody NavUpdateRequest request) {
@@ -86,7 +87,8 @@ public class AdminController {
     @GetMapping("/funds")
     @Operation(
             summary = "List all funds",
-            description = "Retrieves all mutual funds in the system with pagination")
+            description =
+                    "Retrieves all mutual funds in the system with pagination. Returns fund metadata only; NAV values should be queried separately using the NavRepository or transaction endpoints.")
     public ResponseEntity<Page<MutualFund>> getAllFunds(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -103,7 +105,10 @@ public class AdminController {
      * @return ResponseEntity with HTTP 204 status
      */
     @DeleteMapping("/funds/{fundId}")
-    @Operation(summary = "Delete fund", description = "Removes a mutual fund from the system")
+    @Operation(
+            summary = "Delete fund",
+            description =
+                    "Removes a mutual fund from the system. All associated NAV entries are soft-deleted for audit purposes before the fund is removed.")
     public ResponseEntity<Void> deleteFund(
             @PathVariable @Positive(message = "Fund ID must be positive") Long fundId) {
         mutualFundService.deleteMutualFund(fundId);

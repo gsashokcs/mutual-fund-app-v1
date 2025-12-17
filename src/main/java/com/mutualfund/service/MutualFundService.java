@@ -29,11 +29,12 @@ public class MutualFundService implements IMutualFundService {
     private final NavRepository navRepository;
 
     /**
-     * Adds a new mutual fund to the system with current date's NAV.
+     * Adds a new mutual fund to the system. NAV should be added separately using the updateNav
+     * method.
      *
-     * @param request the mutual fund request containing name and NAV
+     * @param request the mutual fund request containing fund name
      * @return MutualFund entity that was created
-     * @throws BusinessException if fund already exists for the current date
+     * @throws BusinessException if fund with the same name already exists
      */
     @Transactional
     public MutualFund addMutualFund(MutualFundRequest request) {
@@ -115,11 +116,12 @@ public class MutualFundService implements IMutualFundService {
     }
 
     /**
-     * Retrieves a mutual fund by ID with latest NAV.
+     * Retrieves a mutual fund by its ID.
      *
      * @param fundId the ID of the fund to retrieve
-     * @return MutualFund entity with latest NAV information
-     * @throws ResourceNotFoundException if fund or NAV is not found
+     * @return MutualFund entity (without NAV data - NAV should be queried separately using
+     *     NavRepository)
+     * @throws ResourceNotFoundException if fund is not found
      */
     @Transactional(readOnly = true)
     public MutualFund getCurrentMutualFund(Long fundId) {

@@ -31,6 +31,8 @@ class UserServiceTest {
 
     @Mock private PasswordEncoder passwordEncoder;
 
+    @Mock private SecurityService securityService;
+
     @InjectMocks private UserService userService;
 
     private User testUser;
@@ -85,6 +87,7 @@ class UserServiceTest {
 
     @Test
     void getUserByIdSuccess() {
+        doNothing().when(securityService).validateUserAccess(1L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
 
         UserResponse response = userService.getUserById(1L);
@@ -96,6 +99,7 @@ class UserServiceTest {
 
     @Test
     void getUserByIdNotFoundThrowsException() {
+        doNothing().when(securityService).validateUserAccess(1L);
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> userService.getUserById(1L));

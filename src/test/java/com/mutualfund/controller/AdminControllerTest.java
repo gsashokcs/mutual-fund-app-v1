@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mutualfund.model.entity.MutualFund;
+import com.mutualfund.model.entity.Nav;
 import com.mutualfund.model.request.MutualFundRequest;
 import com.mutualfund.model.request.NavUpdateRequest;
 import com.mutualfund.model.response.UserResponse;
@@ -46,6 +47,7 @@ class AdminControllerTest {
     @MockitoBean private UserService userService;
 
     private MutualFund testFund;
+    private Nav testNav;
     private MutualFundRequest fundRequest;
     private UserResponse userResponse;
 
@@ -54,12 +56,16 @@ class AdminControllerTest {
         testFund = new MutualFund();
         testFund.setFundId(1L);
         testFund.setName("Test Fund");
-        testFund.setNav(new BigDecimal("100.50"));
-        testFund.setNavDate(LocalDate.now());
+
+        testNav = new Nav();
+        testNav.setNavId(1L);
+        testNav.setFundId(1L);
+        testNav.setNav(new BigDecimal("100.50"));
+        testNav.setNavDate(LocalDate.now());
+        testNav.setDeleted(false);
 
         fundRequest = new MutualFundRequest();
         fundRequest.setName("New Fund");
-        fundRequest.setNav(new BigDecimal("150.00"));
 
         userResponse = new UserResponse(1L, "testuser", "USER");
     }
@@ -93,9 +99,10 @@ class AdminControllerTest {
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
     void updateNavSuccess() throws Exception {
-        NavUpdateRequest navRequest = new NavUpdateRequest(new BigDecimal("120.00"));
+        NavUpdateRequest navRequest =
+                new NavUpdateRequest(new BigDecimal("120.00"), LocalDate.now());
         when(mutualFundService.updateNav(anyLong(), any(NavUpdateRequest.class)))
-                .thenReturn(testFund);
+                .thenReturn(testNav);
 
         mockMvc.perform(
                         put("/api/v1/admin/funds/1/nav")
