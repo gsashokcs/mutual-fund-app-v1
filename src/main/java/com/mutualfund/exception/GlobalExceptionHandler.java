@@ -27,15 +27,16 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 @RestControllerAdvice
-@RequiredArgsConstructor
-@Slf4j
 public class GlobalExceptionHandler {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     private final ErrorMessageService errorMessageService;
+
+    public GlobalExceptionHandler(ErrorMessageService errorMessageService) {
+        this.errorMessageService = errorMessageService;
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)

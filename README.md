@@ -682,8 +682,6 @@ mvn test -Dtest=UserServiceTest
 - **Integration Tests:** Controller tests with MockMvc
 - **Test Coverage:** JaCoCo generates detailed coverage reports
 
-**Note:** Controller tests are currently disabled. Remove `@Disabled` annotation to enable them.
-
 ## Code Quality
 
 ### Run Checkstyle

@@ -14,16 +14,18 @@ import com.mutualfund.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/users")
-@RequiredArgsConstructor
 @Validated
 @Tag(name = "User Management", description = "User registration and profile management endpoints")
 public class UserController {
 
     private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     /**
      * Registers a new user account.

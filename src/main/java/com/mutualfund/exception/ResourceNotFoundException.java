@@ -1,8 +1,5 @@
 package com.mutualfund.exception;
 
-import lombok.Getter;
-
-@Getter
 public class ResourceNotFoundException extends RuntimeException {
 
     private final ErrorCode errorCode;
@@ -20,5 +17,9 @@ public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(ErrorCode errorCode, Throwable cause) {
         super(errorCode.getCode(), cause);
         this.errorCode = errorCode;
+    }
+
+    public ErrorCode getErrorCode() {
+        return errorCode;
     }
 }

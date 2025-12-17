@@ -25,11 +25,9 @@ import com.mutualfund.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/admin")
-@RequiredArgsConstructor
 @Validated
 @PreAuthorize("hasRole('ADMIN')")
 @SecurityRequirement(name = "basicAuth")
@@ -38,6 +36,11 @@ public class AdminController {
 
     private final MutualFundService mutualFundService;
     private final UserService userService;
+
+    public AdminController(MutualFundService mutualFundService, UserService userService) {
+        this.mutualFundService = mutualFundService;
+        this.userService = userService;
+    }
 
     /**
      * Creates a new mutual fund. NAV should be added separately using the Update NAV endpoint.

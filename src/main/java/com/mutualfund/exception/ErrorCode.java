@@ -1,8 +1,5 @@
 package com.mutualfund.exception;
 
-import lombok.Getter;
-
-@Getter
 public enum ErrorCode {
     RESOURCE_NOT_FOUND("RESOURCE_NOT_FOUND"), USER_NOT_FOUND("USER_NOT_FOUND"), MUTUAL_FUND_NOT_FOUND("MUTUAL_FUND_NOT_FOUND"), HOLDING_NOT_FOUND("HOLDING_NOT_FOUND"), TRANSACTION_NOT_FOUND("TRANSACTION_NOT_FOUND"), INSUFFICIENT_BALANCE("INSUFFICIENT_BALANCE"), INSUFFICIENT_UNITS(
             "INSUFFICIENT_UNITS"), INVALID_AMOUNT("INVALID_AMOUNT"), INVALID_UNITS("INVALID_UNITS"), DUPLICATE_USER("DUPLICATE_USER"), DUPLICATE_FUND("DUPLICATE_FUND"), VALIDATION_ERROR("VALIDATION_ERROR"), ACCESS_DENIED(
@@ -12,6 +9,10 @@ public enum ErrorCode {
 
     ErrorCode(String code) {
         this.code = code;
+    }
+
+    public String getCode() {
+        return code;
     }
 
     public static ErrorCode fromCode(String code) {

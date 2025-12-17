@@ -20,13 +20,10 @@ import com.mutualfund.model.response.TransactionResponse;
 import com.mutualfund.repository.HoldingRepository;
 import com.mutualfund.repository.TransactionRepository;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class TransactionService implements ITransactionService {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TransactionService.class);
 
     private final TransactionRepository transactionRepository;
     private final HoldingRepository holdingRepository;
@@ -34,6 +31,15 @@ public class TransactionService implements ITransactionService {
     private final com.mutualfund.repository.NavRepository navRepository;
     private final com.mutualfund.service.strategy.TransactionStrategyFactory strategyFactory;
     private final SecurityService securityService;
+
+    public TransactionService(TransactionRepository transactionRepository, HoldingRepository holdingRepository, MutualFundService mutualFundService, com.mutualfund.repository.NavRepository navRepository, com.mutualfund.service.strategy.TransactionStrategyFactory strategyFactory, SecurityService securityService) {
+        this.transactionRepository = transactionRepository;
+        this.holdingRepository = holdingRepository;
+        this.mutualFundService = mutualFundService;
+        this.navRepository = navRepository;
+        this.strategyFactory = strategyFactory;
+        this.securityService = securityService;
+    }
 
     /**
      * Processes a buy transaction for mutual fund units. Users can only buy units for their own account.

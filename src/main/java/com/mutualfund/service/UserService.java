@@ -16,17 +16,22 @@ import com.mutualfund.model.request.UserRegistrationRequest;
 import com.mutualfund.model.response.UserResponse;
 import com.mutualfund.repository.UserRepository;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class UserService implements IUserService {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final SecurityService securityService;
+    private final AsyncNotificationService asyncNotificationService;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, SecurityService securityService, AsyncNotificationService asyncNotificationService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.securityService = securityService;
+        this.asyncNotificationService = asyncNotificationService;
+    }
 
     /**
      * Registers a new user in the system.
@@ -49,6 +54,12 @@ public class UserService implements IUserService {
 
         User savedUser = userRepository.save(user);
         log.info("User registered successfully with ID: {}", savedUser.getId());
+
+        // Send async welcome notification
+        asyncNotificationService.sendEmailNotification(savedUser.getUsername(), "Welcome to Mutual Fund Management", "Your account has been created successfully. You can now start investing in mutual funds.");
+
+        // Log audit event asynchronously
+        asyncNotificationService.logAuditEvent(savedUser.getId(), "USER_REGISTRATION", "New user registered: " + savedUser.getUsername());
 
         return mapToResponse(savedUser);
     }

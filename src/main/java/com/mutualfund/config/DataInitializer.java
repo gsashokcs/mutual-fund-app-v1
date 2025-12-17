@@ -14,9 +14,6 @@ import com.mutualfund.repository.MutualFundRepository;
 import com.mutualfund.repository.NavRepository;
 import com.mutualfund.repository.UserRepository;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * Initializes the database with default data at application startup. Creates an admin user and loads popular Indian mutual funds if they don't already exist.
  *
@@ -24,14 +21,21 @@ import lombok.extern.slf4j.Slf4j;
  * @version 1.0
  */
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public class DataInitializer implements CommandLineRunner {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DataInitializer.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final MutualFundRepository mutualFundRepository;
     private final NavRepository navRepository;
+
+    public DataInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder, MutualFundRepository mutualFundRepository, NavRepository navRepository) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.mutualFundRepository = mutualFundRepository;
+        this.navRepository = navRepository;
+    }
 
     /**
      * Initializes the database with admin user and mutual funds if not already present.

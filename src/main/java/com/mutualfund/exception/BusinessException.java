@@ -1,8 +1,5 @@
 package com.mutualfund.exception;
 
-import lombok.Getter;
-
-@Getter
 public class BusinessException extends RuntimeException {
 
     private final ErrorCode errorCode;
@@ -20,5 +17,9 @@ public class BusinessException extends RuntimeException {
     public BusinessException(ErrorCode errorCode, Throwable cause) {
         super(errorCode.getCode(), cause);
         this.errorCode = errorCode;
+    }
+
+    public ErrorCode getErrorCode() {
+        return errorCode;
     }
 }

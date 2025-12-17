@@ -11,13 +11,14 @@ import org.springframework.stereotype.Service;
 import com.mutualfund.model.entity.User;
 import com.mutualfund.repository.UserRepository;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
+
+    public CustomUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     /**
      * Loads user details by username for authentication.

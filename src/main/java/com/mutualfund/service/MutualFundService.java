@@ -17,16 +17,18 @@ import com.mutualfund.model.request.NavUpdateRequest;
 import com.mutualfund.repository.MutualFundRepository;
 import com.mutualfund.repository.NavRepository;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class MutualFundService implements IMutualFundService {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MutualFundService.class);
 
     private final MutualFundRepository mutualFundRepository;
     private final NavRepository navRepository;
+
+    public MutualFundService(MutualFundRepository mutualFundRepository, NavRepository navRepository) {
+        this.mutualFundRepository = mutualFundRepository;
+        this.navRepository = navRepository;
+    }
 
     /**
      * Adds a new mutual fund to the system. NAV should be added separately using the updateNav method.

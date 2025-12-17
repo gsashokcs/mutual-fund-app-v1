@@ -10,8 +10,6 @@ import com.mutualfund.exception.ErrorCode;
 import com.mutualfund.model.entity.User;
 import com.mutualfund.repository.UserRepository;
 
-import lombok.RequiredArgsConstructor;
-
 /**
  * Service for handling security and authorization checks. Validates user ownership and role-based access control.
  *
@@ -19,10 +17,13 @@ import lombok.RequiredArgsConstructor;
  * @version 1.0
  */
 @Service
-@RequiredArgsConstructor
 public class SecurityService {
 
     private final UserRepository userRepository;
+
+    public SecurityService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     /**
      * Validates that the authenticated user can access resources for the given userId. Admin users can access any user's resources. Regular users can only access their own resources.
