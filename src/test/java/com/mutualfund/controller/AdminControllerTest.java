@@ -133,8 +133,8 @@ class AdminControllerTest {
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")
     void deleteUserSuccess() throws Exception {
-        doNothing().when(userService).deleteUser(1L);
+        doNothing().when(userService).deleteUser("testuser");
 
-        mockMvc.perform(delete("/api/v1/admin/users/1").with(csrf())).andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/v1/admin/users/testuser").with(csrf())).andExpect(status().isNoContent());
     }
 }

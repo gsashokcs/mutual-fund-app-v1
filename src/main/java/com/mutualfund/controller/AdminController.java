@@ -138,14 +138,14 @@ public class AdminController {
     /**
      * Deletes a user from the system.
      *
-     * @param userId
-     *            the ID of the user to delete
+     * @param username
+     *            the username of the user to delete
      * @return ResponseEntity with HTTP 204 status
      */
-    @DeleteMapping("/users/{userId}")
+    @DeleteMapping("/users/{username}")
     @Operation(summary = "Delete user", description = "Removes a user from the system")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
-        userService.deleteUser(userId);
+    public ResponseEntity<Void> deleteUser(@PathVariable String username) {
+        userService.deleteUser(username);
         return ResponseEntity.noContent().build();
     }
 }

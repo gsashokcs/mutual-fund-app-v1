@@ -152,6 +152,24 @@ public class UserService implements IUserService {
     }
 
     /**
+     * Deletes a user from the system by username.
+     *
+     * @param username
+     *            the username of the user to delete
+     * @throws ResourceNotFoundException
+     *             if user is not found
+     */
+    @Transactional
+    public void deleteUser(String username) {
+        log.info("Deleting user with username: {}", username);
+
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException(ErrorCode.USER_NOT_FOUND, "User not found: " + username));
+
+        userRepository.delete(user);
+        log.info("User deleted successfully: {}", username);
+    }
+
+    /**
      * Retrieves a user by their username. Regular users can only access their own profile. Admin users can access any profile.
      *
      * @param username

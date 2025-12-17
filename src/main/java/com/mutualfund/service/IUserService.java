@@ -53,6 +53,28 @@ public interface IUserService {
     UserResponse getUserById(Long userId);
 
     /**
+     * Retrieves a user by their username.
+     *
+     * @param username
+     *            the username of the user to retrieve
+     * @return UserResponse containing the user's details
+     * @throws com.mutualfund.exception.ResourceNotFoundException
+     *             if user is not found
+     */
+    UserResponse getUserByUsername(String username);
+
+    /**
+     * Creates a new user with specified role (admin operation).
+     *
+     * @param request
+     *            the user creation request containing username, password, and role
+     * @return UserResponse containing the newly created user's details
+     * @throws com.mutualfund.exception.BusinessException
+     *             if username already exists
+     */
+    UserResponse createUser(com.mutualfund.model.request.AdminUserCreationRequest request);
+
+    /**
      * Deletes a user from the system.
      *
      * @param userId
@@ -61,6 +83,16 @@ public interface IUserService {
      *             if user is not found
      */
     void deleteUser(Long userId);
+
+    /**
+     * Deletes a user from the system by username.
+     *
+     * @param username
+     *            the username of the user to delete
+     * @throws com.mutualfund.exception.ResourceNotFoundException
+     *             if user is not found
+     */
+    void deleteUser(String username);
 
     /**
      * Finds a user by their username.

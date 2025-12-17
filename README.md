@@ -535,7 +535,7 @@ Import the Postman collection for easy API testing:
 - `DELETE /api/v1/admin/funds/{fundId}` - Delete fund (soft-deletes all NAV entries first)
 - `POST /api/v1/admin/users` - Create new user with specified role (USER or ADMIN)
 - `GET /api/v1/admin/users` - List all users with pagination
-- `DELETE /api/v1/admin/users/{userId}` - Delete user
+- `DELETE /api/v1/admin/users/{username}` - Delete user by username
 
 #### Health & Monitoring
 - `GET /actuator/health` - Application health status
@@ -880,7 +880,7 @@ Admins can access any user's transaction data through the security bypass.
 | `DELETE /api/v1/admin/funds/{id}` | ADMIN only | Delete fund |
 | `POST /api/v1/admin/users` | ADMIN only | Create user with role (USER/ADMIN) |
 | `GET /api/v1/admin/users` | ADMIN only | List all users |
-| `DELETE /api/v1/admin/users/{id}` | ADMIN only | Delete user |
+| `DELETE /api/v1/admin/users/{username}` | ADMIN only | Delete user by username |
 | `/actuator/**` | Public | Health monitoring |
 | `/h2-console/**` | Public | Database console |
 
