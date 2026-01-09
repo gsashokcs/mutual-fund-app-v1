@@ -1,0 +1,883 @@
+{
+	"info": {
+		"_postman_id": "mutual-fund-api-collection",
+		"name": "Mutual Fund Management API",
+		"description": "Complete API collection for Mutual Fund Management System with Spring Security Basic Authentication, role-based access control (ADMIN/USER), and historical NAV tracking. NAV values are managed separately from fund metadata for comprehensive historical analysis.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "username",
+				"value": "admin",
+				"type": "string"
+			},
+			{
+				"key": "password",
+				"value": "admin123",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080/mutual-fund-management",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "fundId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "adminUsername",
+			"value": "admin",
+			"type": "string"
+		},
+		{
+			"key": "adminPassword",
+			"value": "admin123",
+			"type": "string"
+		},
+		{
+			"key": "userUsername",
+			"value": "testuser",
+			"type": "string"
+		},
+		{
+			"key": "userPassword",
+			"value": "password123",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "User Management",
+			"auth": {
+				"type": "basic",
+				"basic": [
+					{
+						"key": "username",
+						"value": "{{userUsername}}",
+						"type": "string"
+					},
+					{
+						"key": "password",
+						"value": "{{userPassword}}",
+						"type": "string"
+					}
+				]
+			},
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('userId', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"register"
+							]
+						},
+						"description": "Register a new user account with USER role"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/{{userUsername}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userUsername}}"
+							]
+						},
+						"description": "Retrieve user profile information by username"
+					},
+					"response": []
+				}
+			],
+			"description": "User registration and profile management endpoints"
+		},
+		{
+			"name": "Transactions",
+			"auth": {
+				"type": "basic",
+				"basic": [
+					{
+						"key": "username",
+						"value": "{{userUsername}}",
+						"type": "string"
+					},
+					{
+						"key": "password",
+						"value": "{{userPassword}}",
+						"type": "string"
+					}
+				]
+			},
+			"item": [
+				{
+					"name": "Buy Units",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fundId\": {{fundId}},\n    \"units\": 10.50\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/{{userId}}/buy",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}",
+								"buy"
+							]
+						},
+						"description": "Purchase mutual fund units at the latest available NAV. The system fetches the most recent NAV from the historical NAV table for the specified fund."
+					},
+					"response": []
+				},
+				{
+					"name": "Redeem Units",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fundId\": {{fundId}},\n    \"units\": 5.25\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/{{userId}}/redeem",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}",
+								"redeem"
+							]
+						},
+						"description": "Redeem mutual fund units at the latest available NAV. The system fetches the most recent NAV from the historical NAV table for the specified fund. Validates sufficient units before processing."
+					},
+					"response": []
+				},
+				{
+					"name": "View Holdings",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/{{userId}}/holdings",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}",
+								"holdings"
+							]
+						},
+						"description": "Retrieve all mutual fund holdings for a user with current market values calculated using the latest NAV from the historical NAV table."
+					},
+					"response": []
+				},
+				{
+					"name": "View Transactions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/users/{{userId}}/transactions?page=0&size=10&sortBy=transactionDate",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}",
+								"transactions"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "transactionDate"
+								}
+							]
+						},
+						"description": "Retrieve transaction history for a user with pagination"
+					},
+					"response": []
+				}
+			],
+			"description": "User transaction and holdings management endpoints"
+		},
+		{
+			"name": "Admin Operations",
+			"auth": {
+				"type": "basic",
+				"basic": [
+					{
+						"key": "username",
+						"value": "{{adminUsername}}",
+						"type": "string"
+					},
+					{
+						"key": "password",
+						"value": "{{adminPassword}}",
+						"type": "string"
+					}
+				]
+			},
+			"item": [
+				{
+					"name": "Add Mutual Fund",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('fundId', jsonData.fundId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Growth Fund Alpha\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/funds",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"funds"
+							]
+						},
+						"description": "Create a new mutual fund with metadata only (Admin only). NAV values are managed separately for historical tracking. Use the Update NAV endpoint to add NAV values for specific dates."
+					},
+					"response": []
+				},
+				{
+					"name": "Update NAV",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nav\": 155.50,\n    \"navDate\": \"2025-12-16\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/funds/{{fundId}}/nav",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"funds",
+								"{{fundId}}",
+								"nav"
+							]
+						},
+						"description": "Update or create NAV for a mutual fund on a specific date (Admin only). If NAV exists for the date, it will be updated; otherwise, a new NAV entry will be created. This enables historical NAV tracking."
+					},
+					"response": []
+				},
+				{
+					"name": "List All Funds",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/funds?page=0&size=10&sortBy=fundId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"funds"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "fundId"
+								}
+							]
+						},
+						"description": "Retrieve all mutual funds with pagination (Admin only). Returns fund metadata only; NAV values should be queried separately."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Fund",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/funds/{{fundId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"funds",
+								"{{fundId}}"
+							]
+						},
+						"description": "Remove a mutual fund from the system (Admin only). All associated NAV entries are soft-deleted for audit purposes before the fund is removed."
+					},
+					"response": []
+				},
+				{
+					"name": "Create User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('userId', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"newuser\",\n    \"password\": \"password123\",\n    \"role\": \"USER\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"users"
+							]
+						},
+						"description": "Create a new user with specified role (USER or ADMIN) - Admin only"
+					},
+					"response": []
+				},
+				{
+					"name": "List All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/users?page=0&size=10&sortBy=id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "id"
+								}
+							]
+						},
+						"description": "Retrieve all registered users with pagination (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/admin/users/{{userUsername}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"users",
+								"{{userUsername}}"
+							]
+						},
+						"description": "Remove a user from the system by username (Admin only)"
+					},
+					"response": []
+				}
+			],
+			"description": "Administrative endpoints for managing funds and users (requires ADMIN role)"
+		},		
+		{
+			"name": "Health & Monitoring",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"health"
+							]
+						},
+						"description": "Check application health status"
+					},
+					"response": []
+				},
+				{
+					"name": "Application Info",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/info",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"info"
+							]
+						},
+						"description": "Get application information"
+					},
+					"response": []
+				},
+				{
+					"name": "Actuator Endpoints",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator"
+							]
+						},
+						"description": "List all available actuator endpoints"
+					},
+					"response": []
+				},
+				{
+					"name": "Metrics",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/metrics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"metrics"
+							]
+						},
+						"description": "View application metrics"
+					},
+					"response": []
+				},
+				{
+					"name": "Specific Metric",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/metrics/jvm.memory.used",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"metrics",
+								"jvm.memory.used"
+							]
+						},
+						"description": "View specific metric details (example: jvm.memory.used)"
+					},
+					"response": []
+				},
+				{
+					"name": "Environment Properties",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/env",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"env"
+							]
+						},
+						"description": "View environment properties"
+					},
+					"response": []
+				},
+				{
+					"name": "Beans",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/beans",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"beans"
+							]
+						},
+						"description": "View all Spring beans in the application context"
+					},
+					"response": []
+				},
+				{
+					"name": "Configuration Properties",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/configprops",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"configprops"
+							]
+						},
+						"description": "View all @ConfigurationProperties beans"
+					},
+					"response": []
+				},
+				{
+					"name": "Loggers",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/loggers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"loggers"
+							]
+						},
+						"description": "View and modify logger configurations"
+					},
+					"response": []
+				},
+				{
+					"name": "Request Mappings",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/mappings",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"mappings"
+							]
+						},
+						"description": "View all @RequestMapping paths"
+					},
+					"response": []
+				},
+				{
+					"name": "Thread Dump",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/threaddump",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"threaddump"
+							]
+						},
+						"description": "Perform a thread dump"
+					},
+					"response": []
+				},
+				{
+					"name": "Heap Dump",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/heapdump",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"heapdump"
+							]
+						},
+						"description": "Download a heap dump (returns binary file)"
+					},
+					"response": []
+				},
+				{
+					"name": "Conditions",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/conditions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"conditions"
+							]
+						},
+						"description": "View condition evaluation report"
+					},
+					"response": []
+				},
+				{
+					"name": "Scheduled Tasks",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/scheduledtasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"scheduledtasks"
+							]
+						},
+						"description": "View scheduled tasks"
+					},
+					"response": []
+				},
+				{
+					"name": "Caches",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/caches",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"caches"
+							]
+						},
+						"description": "View available caches"
+					},
+					"response": []
+				}
+			],
+			"description": "Health monitoring and actuator endpoints"
+		}
+	]
+}

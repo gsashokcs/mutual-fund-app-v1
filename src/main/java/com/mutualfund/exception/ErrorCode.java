@@ -1,0 +1,26 @@
+package com.mutualfund.exception;
+
+public enum ErrorCode {
+    RESOURCE_NOT_FOUND("RESOURCE_NOT_FOUND"), USER_NOT_FOUND("USER_NOT_FOUND"), MUTUAL_FUND_NOT_FOUND("MUTUAL_FUND_NOT_FOUND"), HOLDING_NOT_FOUND("HOLDING_NOT_FOUND"), TRANSACTION_NOT_FOUND("TRANSACTION_NOT_FOUND"), INSUFFICIENT_BALANCE("INSUFFICIENT_BALANCE"), INSUFFICIENT_UNITS(
+            "INSUFFICIENT_UNITS"), INVALID_AMOUNT("INVALID_AMOUNT"), INVALID_UNITS("INVALID_UNITS"), DUPLICATE_USER("DUPLICATE_USER"), DUPLICATE_FUND("DUPLICATE_FUND"), VALIDATION_ERROR("VALIDATION_ERROR"), ACCESS_DENIED(
+                    "ACCESS_DENIED"), AUTHENTICATION_FAILED("AUTHENTICATION_FAILED"), UNAUTHORIZED_ACCESS("UNAUTHORIZED_ACCESS"), INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR"), BAD_REQUEST("BAD_REQUEST"), NAV_UPDATE_FAILED("NAV_UPDATE_FAILED"), TRANSACTION_FAILED("TRANSACTION_FAILED");
+
+    private final String code;
+
+    ErrorCode(String code) {
+        this.code = code;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public static ErrorCode fromCode(String code) {
+        for (ErrorCode errorCode : ErrorCode.values()) {
+            if (errorCode.getCode().equals(code)) {
+                return errorCode;
+            }
+        }
+        return INTERNAL_SERVER_ERROR;
+    }
+}
